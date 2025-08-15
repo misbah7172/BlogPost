@@ -17,6 +17,8 @@ import Subscribe from './pages/Subscribe';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
 import AdminPanel from './pages/admin/AdminPanel';
+import CreateBlog from './pages/CreateBlog';
+import EditBlog from './pages/EditBlog';
 
 // Protected route component
 const ProtectedRoute = ({ children, requireAdmin = false }) => {
@@ -75,6 +77,22 @@ function App() {
                   element={
                     <ProtectedRoute requireAdmin={true}>
                       <AdminDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/create-blog" 
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <CreateBlog />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/edit-blog/:id" 
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <EditBlog />
                     </ProtectedRoute>
                   } 
                 />

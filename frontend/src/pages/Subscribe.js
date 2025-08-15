@@ -89,9 +89,9 @@ const Subscribe = () => {
       const selectedPlanData = plans.find(plan => plan.id === selectedPlan);
       
       await transactionService.submitTransaction({
-        trx_id: transactionId,
+        trxId: transactionId,
         amount: selectedPlanData.price,
-        plan_type: selectedPlan
+        planType: selectedPlan
       });
 
       toast.success('Transaction submitted successfully! We will verify and activate your subscription within 24 hours.');
@@ -102,7 +102,16 @@ const Subscribe = () => {
       navigate('/dashboard');
       
     } catch (error) {
-      toast.error(error.message || 'Failed to submit transaction');
+      console.error('Transaction submission error:', error);
+      // Show more specific error message if available
+      if (error.response?.data?.errors) {
+        const errorMessages = error.response.data.errors.map(err => err.msg).join(', ');
+        toast.error(`Validation errors: ${errorMessages}`);
+      } else if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error(error.message || 'Failed to submit transaction');
+      }
     } finally {
       setIsSubmitting(false);
     }

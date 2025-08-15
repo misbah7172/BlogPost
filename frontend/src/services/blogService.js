@@ -48,9 +48,19 @@ export const blogService = {
   createBlog: async (blogData) => {
     const formData = new FormData();
     
-    Object.keys(blogData).forEach(key => {
-      if (blogData[key] !== null && blogData[key] !== undefined) {
-        formData.append(key, blogData[key]);
+    // Map frontend field names to backend field names
+    const mappedData = {
+      title: blogData.title,
+      category: blogData.category,
+      tags: blogData.tags,
+      content: blogData.content,
+      excerpt: blogData.excerpt,
+      isPremium: blogData.isPremium
+    };
+    
+    Object.keys(mappedData).forEach(key => {
+      if (mappedData[key] !== null && mappedData[key] !== undefined) {
+        formData.append(key, mappedData[key]);
       }
     });
 
@@ -63,9 +73,19 @@ export const blogService = {
   updateBlog: async (id, blogData) => {
     const formData = new FormData();
     
-    Object.keys(blogData).forEach(key => {
-      if (blogData[key] !== null && blogData[key] !== undefined) {
-        formData.append(key, blogData[key]);
+    // Map frontend field names to backend field names
+    const mappedData = {
+      title: blogData.title,
+      category: blogData.category,
+      tags: blogData.tags,
+      content: blogData.content,
+      excerpt: blogData.excerpt,
+      isPremium: blogData.isPremium
+    };
+    
+    Object.keys(mappedData).forEach(key => {
+      if (mappedData[key] !== null && mappedData[key] !== undefined) {
+        formData.append(key, mappedData[key]);
       }
     });
 

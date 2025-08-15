@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { transactionService } from '../services/transactionService';
 import { blogService } from '../services/blogService';
 import { 
@@ -21,6 +22,7 @@ import toast from 'react-hot-toast';
 
 const AdminDashboard = () => {
   const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [transactions, setTransactions] = useState([]);
   const [users, setUsers] = useState([]);
   const [blogs, setBlogs] = useState([]);
@@ -40,6 +42,7 @@ const AdminDashboard = () => {
   const fetchAdminData = useCallback(async () => {
     try {
       setLoading(true);
+      
       const [transactionsRes, usersRes, blogsRes, statsRes] = await Promise.all([
         transactionService.getAllTransactions(),
         transactionService.getAllUsers(),
@@ -50,14 +53,26 @@ const AdminDashboard = () => {
       setTransactions(transactionsRes.transactions || []);
       setUsers(usersRes.users || []);
       setBlogs(blogsRes.blogs || []);
-      setStats(statsRes.stats || stats);
+      
+      // Map backend response to frontend stats structure
+      if (statsRes) {
+        const mappedStats = {
+          totalUsers: statsRes.users?.total_users || 0,
+          activeSubscriptions: statsRes.users?.active_subscribers || 0,
+          totalRevenue: statsRes.transactions?.total_revenue || 0,
+          pendingTransactions: statsRes.transactions?.pending_transactions || 0,
+          totalBlogs: statsRes.blogs?.total_blogs || 0,
+          premiumBlogs: statsRes.blogs?.premium_blogs || 0
+        };
+        setStats(mappedStats);
+      }
     } catch (error) {
       toast.error('Failed to load admin data');
       console.error('Admin dashboard error:', error);
     } finally {
       setLoading(false);
     }
-  }, [stats]);
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
@@ -76,11 +91,39 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleCreateBlog = () => {
+    // Navigate to blog creation page
+    navigate('/create-blog');
+  };
+
+  const handleViewBlog = (blogId) => {
+    // Navigate to view blog page
+    navigate(`/blog/${blogId}`);
+  };
+
+  const handleEditBlog = (blogId) => {
+    // Navigate to edit blog page
+    navigate(`/edit-blog/${blogId}`);
+  };
+
+  const handleDeleteBlog = async (blogId, blogTitle) => {
+    if (window.confirm(`Are you sure you want to delete "${blogTitle}"? This action cannot be undone.`)) {
+      try {
+        await blogService.deleteBlog(blogId);
+        toast.success('Blog deleted successfully');
+        fetchAdminData(); // Refresh data
+      } catch (error) {
+        toast.error('Failed to delete blog');
+        console.error('Delete blog error:', error);
+      }
+    }
+  };
+
   const getTransactionStatusBadge = (status) => {
     const statusConfig = {
-      pending: { color: 'bg-yellow-100 text-yellow-800', label: 'Pending' },
-      approved: { color: 'bg-green-100 text-green-800', label: 'Approved' },
-      rejected: { color: 'bg-red-100 text-red-800', label: 'Rejected' }
+      pending: { color: 'bg-accent-500 text-white border-2 border-black dark:border-dark-border', label: 'Pending' },
+      approved: { color: 'bg-green-500 text-white border-2 border-black dark:border-dark-border', label: 'Approved' },
+      rejected: { color: 'bg-red-500 text-white border-2 border-black dark:border-dark-border', label: 'Rejected' }
     };
     
     return statusConfig[status] || statusConfig.pending;
@@ -110,12 +153,12 @@ const AdminDashboard = () => {
   // Check if user is admin
   if (!isAuthenticated || user?.role !== 'admin') {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+      <div className="min-h-screen bg-cream dark:bg-dark-bg flex items-center justify-center">
+        <div className="text-center brutal-card p-8">
+          <h2 className="text-2xl font-bold text-black dark:text-white mb-4">
             Access Denied
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-gray-700 dark:text-gray-300 mb-6">
             You need admin privileges to access this page
           </p>
         </div>
@@ -124,14 +167,14 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-cream dark:bg-dark-bg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-3xl font-bold text-black dark:text-white mb-2 border-b-4 border-black dark:border-dark-border pb-2">
             Admin Dashboard
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-700 dark:text-gray-300">
             Manage users, transactions, and content across the platform.
           </p>
         </div>
@@ -139,16 +182,16 @@ const AdminDashboard = () => {
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
           {/* Total Users */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="brutal-card p-6">
             <div className="flex items-center">
-              <div className="p-3 rounded-full bg-blue-100">
-                <Users className="h-6 w-6 text-blue-600" />
+              <div className="p-3 border-2 border-black dark:border-dark-border bg-primary-500">
+                <Users className="h-6 w-6 text-white" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Total Users
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-2xl font-bold text-black dark:text-white">
                   {stats.totalUsers}
                 </p>
               </div>
@@ -156,16 +199,16 @@ const AdminDashboard = () => {
           </div>
 
           {/* Active Subscriptions */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="brutal-card p-6">
             <div className="flex items-center">
-              <div className="p-3 rounded-full bg-green-100">
-                <CheckCircle className="h-6 w-6 text-green-600" />
+              <div className="p-3 border-2 border-black dark:border-dark-border bg-green-500">
+                <CheckCircle className="h-6 w-6 text-white" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Active Subs
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-2xl font-bold text-black dark:text-white">
                   {stats.activeSubscriptions}
                 </p>
               </div>
@@ -173,16 +216,16 @@ const AdminDashboard = () => {
           </div>
 
           {/* Total Revenue */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="brutal-card p-6">
             <div className="flex items-center">
-              <div className="p-3 rounded-full bg-yellow-100">
-                <TrendingUp className="h-6 w-6 text-yellow-600" />
+              <div className="p-3 border-2 border-black dark:border-dark-border bg-accent-500">
+                <TrendingUp className="h-6 w-6 text-white" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Revenue
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-2xl font-bold text-black dark:text-white">
                   {formatCurrency(stats.totalRevenue)}
                 </p>
               </div>
@@ -190,16 +233,16 @@ const AdminDashboard = () => {
           </div>
 
           {/* Pending Transactions */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="brutal-card p-6">
             <div className="flex items-center">
-              <div className="p-3 rounded-full bg-orange-100">
-                <AlertCircle className="h-6 w-6 text-orange-600" />
+              <div className="p-3 border-2 border-black dark:border-dark-border bg-orange-500">
+                <AlertCircle className="h-6 w-6 text-white" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Pending
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-2xl font-bold text-black dark:text-white">
                   {stats.pendingTransactions}
                 </p>
               </div>
@@ -207,16 +250,16 @@ const AdminDashboard = () => {
           </div>
 
           {/* Total Blogs */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="brutal-card p-6">
             <div className="flex items-center">
-              <div className="p-3 rounded-full bg-purple-100">
-                <BookOpen className="h-6 w-6 text-purple-600" />
+              <div className="p-3 border-2 border-black dark:border-dark-border bg-purple-500">
+                <BookOpen className="h-6 w-6 text-white" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Total Blogs
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-2xl font-bold text-black dark:text-white">
                   {stats.totalBlogs}
                 </p>
               </div>
@@ -224,16 +267,16 @@ const AdminDashboard = () => {
           </div>
 
           {/* Premium Blogs */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="brutal-card p-6">
             <div className="flex items-center">
-              <div className="p-3 rounded-full bg-indigo-100">
-                <CreditCard className="h-6 w-6 text-indigo-600" />
+              <div className="p-3 border-2 border-black dark:border-dark-border bg-indigo-500">
+                <CreditCard className="h-6 w-6 text-white" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Premium
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-2xl font-bold text-black dark:text-white">
                   {stats.premiumBlogs}
                 </p>
               </div>
@@ -243,7 +286,7 @@ const AdminDashboard = () => {
 
         {/* Tab Navigation */}
         <div className="mb-8">
-          <nav className="flex space-x-8">
+          <nav className="flex space-x-2">
             {[
               { id: 'overview', label: 'Overview', icon: TrendingUp },
               { id: 'transactions', label: 'Transactions', icon: CreditCard },
@@ -254,10 +297,10 @@ const AdminDashboard = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                className={`flex items-center px-4 py-3 font-medium border-2 border-black dark:border-dark-border transition-colors ${
                   activeTab === tab.id
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-white dark:bg-dark-card text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 <tab.icon className="h-4 w-4 mr-2" />
@@ -271,8 +314,8 @@ const AdminDashboard = () => {
         {activeTab === 'overview' && (
           <div className="space-y-6">
             {/* Recent Transactions */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="brutal-card p-6">
+              <h3 className="text-lg font-semibold text-black dark:text-white mb-4 border-b-2 border-black dark:border-dark-border pb-2">
                 Recent Transactions
               </h3>
               {transactions.slice(0, 5).map((transaction) => {
@@ -314,19 +357,19 @@ const AdminDashboard = () => {
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="brutal-card p-6">
+              <h3 className="text-lg font-semibold text-black dark:text-white mb-4 border-b-2 border-black dark:border-dark-border pb-2">
                 Quick Actions
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <button
                   onClick={() => setActiveTab('transactions')}
-                  className="flex items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  className="flex items-center p-4 border-2 border-black dark:border-dark-border bg-white dark:bg-dark-card hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
-                  <CreditCard className="h-8 w-8 text-blue-600 mr-3" />
+                  <CreditCard className="h-8 w-8 text-primary-500 mr-3" />
                   <div className="text-left">
-                    <p className="font-medium text-gray-900 dark:text-white">Review Transactions</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{stats.pendingTransactions} pending</p>
+                    <p className="font-medium text-black dark:text-white">Review Transactions</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">{stats.pendingTransactions} pending</p>
                   </div>
                 </button>
 
@@ -365,9 +408,9 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === 'transactions' && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="brutal-card p-6">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-black dark:text-white border-b-2 border-black dark:border-dark-border pb-2">
                 Transaction Management
               </h3>
               <div className="flex space-x-4">
@@ -378,13 +421,13 @@ const AdminDashboard = () => {
                     placeholder="Search transactions..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    className="pl-10 pr-4 py-2 brutal-input"
                   />
                 </div>
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  className="brutal-select"
                 >
                   <option value="all">All Status</option>
                   <option value="pending">Pending</option>
@@ -484,8 +527,8 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === 'users' && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
+          <div className="brutal-card p-6">
+            <h3 className="text-lg font-semibold text-black dark:text-white mb-6 border-b-2 border-black dark:border-dark-border pb-2">
               User Management
             </h3>
             
@@ -569,12 +612,15 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === 'blogs' && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="brutal-card p-6">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-black dark:text-white border-b-2 border-black dark:border-dark-border pb-2">
                 Content Management
               </h3>
-              <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+              <button 
+                onClick={handleCreateBlog}
+                className="brutal-button-primary"
+              >
                 Create New Blog
               </button>
             </div>
@@ -582,7 +628,7 @@ const AdminDashboard = () => {
             {loading ? (
               <div className="animate-pulse space-y-4">
                 {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <div key={i} className="h-20 bg-gray-200 dark:bg-gray-700 border-2 border-black dark:border-dark-border"></div>
                 ))}
               </div>
             ) : (
@@ -611,13 +657,25 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                     <div className="flex space-x-2">
-                      <button className="text-blue-600 hover:text-blue-900">
+                      <button 
+                        onClick={() => handleViewBlog(blog.id)}
+                        className="text-blue-600 hover:text-blue-900"
+                        title="View Blog"
+                      >
                         <Eye className="h-5 w-5" />
                       </button>
-                      <button className="text-gray-600 hover:text-gray-900">
+                      <button 
+                        onClick={() => handleEditBlog(blog.id)}
+                        className="text-gray-600 hover:text-gray-900"
+                        title="Edit Blog"
+                      >
                         <Edit className="h-5 w-5" />
                       </button>
-                      <button className="text-red-600 hover:text-red-900">
+                      <button 
+                        onClick={() => handleDeleteBlog(blog.id, blog.title)}
+                        className="text-red-600 hover:text-red-900"
+                        title="Delete Blog"
+                      >
                         <Trash2 className="h-5 w-5" />
                       </button>
                     </div>
@@ -629,8 +687,8 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === 'settings' && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
+          <div className="brutal-card p-6">
+            <h3 className="text-lg font-semibold text-black dark:text-white mb-6 border-b-2 border-black dark:border-dark-border pb-2">
               System Settings
             </h3>
             

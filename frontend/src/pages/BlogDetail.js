@@ -154,15 +154,15 @@ const BlogDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-cream dark:bg-dark-bg">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-300 dark:bg-gray-700 rounded mb-4"></div>
-            <div className="h-64 bg-gray-300 dark:bg-gray-700 rounded mb-8"></div>
+            <div className="h-8 bg-gray-300 dark:bg-gray-700 border-2 border-black dark:border-dark-border mb-4"></div>
+            <div className="h-64 bg-gray-300 dark:bg-gray-700 border-2 border-black dark:border-dark-border mb-8"></div>
             <div className="space-y-4">
-              <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded"></div>
-              <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded"></div>
-              <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-2/3"></div>
+              <div className="h-4 bg-gray-300 dark:bg-gray-700 border-2 border-black dark:border-dark-border"></div>
+              <div className="h-4 bg-gray-300 dark:bg-gray-700 border-2 border-black dark:border-dark-border"></div>
+              <div className="h-4 bg-gray-300 dark:bg-gray-700 border-2 border-black dark:border-dark-border w-2/3"></div>
             </div>
           </div>
         </div>
@@ -172,10 +172,10 @@ const BlogDetail = () => {
 
   if (!blog) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Blog not found</h2>
-          <Link to="/blogs" className="text-blue-600 hover:text-blue-500">
+      <div className="min-h-screen bg-cream dark:bg-dark-bg flex items-center justify-center">
+        <div className="text-center brutal-card p-8">
+          <h2 className="text-2xl font-bold text-black dark:text-white mb-4">Blog not found</h2>
+          <Link to="/blogs" className="brutal-button-primary">
             Back to all blogs
           </Link>
         </div>
@@ -184,12 +184,12 @@ const BlogDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-cream dark:bg-dark-bg">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center text-blue-600 hover:text-blue-500 mb-8"
+          className="inline-flex items-center brutal-button-primary mb-8"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
@@ -199,12 +199,12 @@ const BlogDetail = () => {
         <header className="mb-8">
           {/* Category and Premium Badge */}
           <div className="flex items-center gap-2 mb-4">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+            <span className="inline-flex items-center px-3 py-1 border-2 border-black dark:border-dark-border text-sm font-medium bg-primary-500 text-white">
               <Tag className="h-3 w-3 mr-1" />
               {blog.category}
             </span>
             {blog.is_premium && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+              <span className="inline-flex items-center px-3 py-1 border-2 border-black dark:border-dark-border text-sm font-medium bg-accent-500 text-white">
                 <Lock className="h-3 w-3 mr-1" />
                 Premium
               </span>
@@ -212,12 +212,12 @@ const BlogDetail = () => {
           </div>
 
           {/* Title */}
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-4xl font-bold text-black dark:text-white mb-4 border-b-2 border-black dark:border-dark-border pb-2">
             {blog.title}
           </h1>
 
           {/* Meta Info */}
-          <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 mb-6">
+          <div className="flex items-center justify-between text-gray-700 dark:text-gray-300 mb-6">
             <div className="flex items-center space-x-6">
               <div className="flex items-center">
                 <User className="h-4 w-4 mr-2" />
@@ -234,10 +234,10 @@ const BlogDetail = () => {
           <div className="flex items-center space-x-4">
             <button
               onClick={handleLike}
-              className={`inline-flex items-center px-4 py-2 rounded-lg border transition-colors ${
+              className={`inline-flex items-center px-4 py-2 border-2 border-black dark:border-dark-border transition-colors font-medium ${
                 isLiked
-                  ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100'
-                  : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300'
+                  ? 'bg-red-500 text-white hover:bg-red-600'
+                  : 'bg-white dark:bg-dark-card text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
               <Heart className={`h-4 w-4 mr-2 ${isLiked ? 'fill-current' : ''}`} />
@@ -246,10 +246,10 @@ const BlogDetail = () => {
 
             <button
               onClick={handleSave}
-              className={`inline-flex items-center px-4 py-2 rounded-lg border transition-colors ${
+              className={`inline-flex items-center px-4 py-2 border-2 border-black dark:border-dark-border transition-colors font-medium ${
                 isSaved
-                  ? 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100'
-                  : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300'
+                  ? 'bg-green-500 text-white hover:bg-green-600'
+                  : 'bg-white dark:bg-dark-card text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
               {isSaved ? (
@@ -262,7 +262,7 @@ const BlogDetail = () => {
 
             <button
               onClick={handleShare}
-              className="inline-flex items-center px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
+              className="inline-flex items-center px-4 py-2 border-2 border-black dark:border-dark-border text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 bg-white dark:bg-dark-card font-medium"
             >
               <Share2 className="h-4 w-4 mr-2" />
               Share
@@ -270,41 +270,41 @@ const BlogDetail = () => {
           </div>
         </header>
 
-        {/* Blog Image */}
+                {/* Blog Image */}
         {blog.image_url && (
           <div className="mb-8">
             <img
               src={blog.image_url}
               alt={blog.title}
-              className="w-full h-64 object-cover rounded-xl"
+              className="w-full h-64 object-cover border-2 border-black dark:border-dark-border"
             />
           </div>
         )}
 
         {/* Blog Content */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-8">
+        <div className="brutal-card p-8 mb-8">
           {canViewContent() ? (
-            <div className="prose dark:prose-invert max-w-none">
+            <div className="prose dark:prose-invert max-w-none blog-content">
               <div dangerouslySetInnerHTML={{ __html: blog.content.replace(/\n/g, '<br>') }} />
             </div>
           ) : (
             <div className="text-center py-12">
               <Lock className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-xl font-medium text-black dark:text-white mb-2">
                 Premium Content
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
+              <p className="text-gray-700 dark:text-gray-300 mb-6">
                 This is premium content. Subscribe to read the full article.
               </p>
               <div className="space-y-4">
-                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="bg-cream dark:bg-dark-card p-4 border-2 border-black dark:border-dark-border">
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
                     {blog.excerpt}
                   </p>
                 </div>
                 <Link
                   to="/subscribe"
-                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700"
+                  className="inline-flex items-center brutal-button bg-accent-500 hover:bg-accent-600 text-white"
                 >
                   Subscribe Now
                 </Link>
@@ -314,8 +314,8 @@ const BlogDetail = () => {
         </div>
 
         {/* Comments Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+        <div className="brutal-card p-8">
+            <h3 className="text-2xl font-bold text-black dark:text-white mb-6 border-b-2 border-black dark:border-dark-border pb-2">
               Comments ({comments.length})
             </h3>
 
@@ -327,14 +327,14 @@ const BlogDetail = () => {
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    className="brutal-input"
                     placeholder="Write your comment..."
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={commentLoading}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                  className="brutal-button-primary disabled:opacity-50"
                 >
                   {commentLoading ? (
                     <>
@@ -350,9 +350,9 @@ const BlogDetail = () => {
                 </button>
               </form>
             ) : (
-              <div className="mb-8 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
-                <p className="text-gray-600 dark:text-gray-400">
-                  <Link to="/login" className="text-blue-600 hover:text-blue-500">
+              <div className="mb-8 p-4 bg-cream dark:bg-dark-card border-2 border-black dark:border-dark-border text-center">
+                <p className="text-gray-700 dark:text-gray-300">
+                  <Link to="/login" className="text-primary-500 hover:text-primary-600 font-medium">
                     Login
                   </Link>{' '}
                   to join the discussion
@@ -363,17 +363,17 @@ const BlogDetail = () => {
             {/* Comments List */}
             <div className="space-y-6">
               {comments.map((comment) => (
-                <div key={comment.id} className="border-b border-gray-200 dark:border-gray-700 pb-6">
+                <div key={comment.id} className="border-b-2 border-black dark:border-dark-border pb-6">
                   <div className="flex items-center mb-2">
                     <div className="flex items-center">
-                      <div className="h-8 w-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
-                        <User className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                      <div className="h-8 w-8 border-2 border-black dark:border-dark-border bg-primary-500 flex items-center justify-center">
+                        <User className="h-4 w-4 text-white" />
                       </div>
-                      <span className="ml-2 font-medium text-gray-900 dark:text-white">
+                      <span className="ml-2 font-medium text-black dark:text-white">
                         {comment.user_name}
                       </span>
                     </div>
-                    <span className="ml-auto text-sm text-gray-500 dark:text-gray-400">
+                    <span className="ml-auto text-sm text-gray-600 dark:text-gray-400 font-medium">
                       {formatDate(comment.created_at)}
                     </span>
                   </div>
@@ -384,9 +384,11 @@ const BlogDetail = () => {
               ))}
 
               {comments.length === 0 && (
-                <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-                  No comments yet. Be the first to comment!
-                </p>
+                <div className="text-center py-8 bg-cream dark:bg-dark-card border-2 border-black dark:border-dark-border">
+                  <p className="text-gray-600 dark:text-gray-400 font-medium">
+                    No comments yet. Be the first to comment!
+                  </p>
+                </div>
               )}
             </div>
           </div>

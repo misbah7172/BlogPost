@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { blogService } from '../services/blogService';
 import { Clock, User, Tag, Lock, Heart, BookOpen } from 'lucide-react';
@@ -15,11 +15,18 @@ const BlogList = () => {
   const [hasMore, setHasMore] = useState(false);
   const { user, isAuthenticated } = useAuth();
 
-  useEffect(() => {
-    fetchBlogs();
-  }, [selectedCategory, searchTerm, currentPage]);
+  const fetchCategories = async () => {
+    try {
+      const response = await blogService.getCategories();
+      console.log('📋 Categories fetched:', response);
+      setCategories(response.categories || []);
+    } catch (error) {
+      console.error('❌ Error fetching categories:', error);
+      toast.error('Failed to fetch categories');
+    }
+  };
 
-  const fetchBlogs = async () => {
+  const fetchBlogs = useCallback(async () => {
     try {
       setLoading(true);
       const params = {
@@ -35,9 +42,6 @@ const BlogList = () => {
       
       if (currentPage === 1) {
         setBlogs(response.blogs);
-        // Extract unique categories
-        const uniqueCategories = [...new Set(response.blogs.map(blog => blog.category))];
-        setCategories(uniqueCategories);
       } else {
         setBlogs(prev => [...prev, ...response.blogs]);
       }
@@ -49,7 +53,15 @@ const BlogList = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedCategory, searchTerm, currentPage]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    fetchBlogs();
+  }, [fetchBlogs]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -119,7 +131,9 @@ const BlogList = () => {
             >
               <option value="">All Categories</option>
               {categories.map(category => (
-                <option key={category} value={category}>{category}</option>
+                <option key={category.id || category.name} value={category.name}>
+                  {category.name} {category.count > 0 && `(${category.count})`}
+                </option>
               ))}
             </select>
           </div>

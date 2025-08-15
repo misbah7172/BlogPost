@@ -82,6 +82,6 @@ export const transactionService = {
 
   // Get admin statistics
   getAdminStats: async () => {
-    return await apiRequest('/admin/stats');
+    return await apiRequest('/admin/dashboard/stats');
   },
 };
