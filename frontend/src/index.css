@@ -1,0 +1,270 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom base styles */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f5f2e8;
+  }
+
+  /* Dark mode styles */
+  .dark body {
+    background-color: #1a1a1a;
+    color: #e5e5e5;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  .dark ::-webkit-scrollbar-track {
+    background: #2d2d2d;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: #555;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: #777;
+  }
+}
+
+/* Custom component styles */
+@layer components {
+  /* Brutalist design components */
+  .brutal-card {
+    @apply bg-white border-2 border-black shadow-none;
+  }
+
+  .dark .brutal-card {
+    @apply bg-dark-card border-dark-border;
+  }
+
+  .brutal-button {
+    @apply bg-accent-500 hover:bg-accent-600 text-white font-medium py-2 px-4 border-2 border-black transition-colors duration-200;
+  }
+
+  .dark .brutal-button {
+    @apply border-dark-border;
+  }
+
+  .brutal-button-primary {
+    @apply bg-primary-500 hover:bg-primary-600 text-white font-medium py-2 px-4 border-2 border-black transition-colors duration-200;
+  }
+
+  .dark .brutal-button-primary {
+    @apply border-dark-border;
+  }
+
+  .brutal-input {
+    @apply w-full px-3 py-2 border-2 border-black bg-white focus:outline-none focus:border-primary-500;
+  }
+
+  .dark .brutal-input {
+    @apply bg-dark-card border-dark-border text-white focus:border-primary-400;
+  }
+
+  .brutal-select {
+    @apply w-full px-3 py-2 border-2 border-black bg-white focus:outline-none focus:border-primary-500 appearance-none;
+  }
+
+  .dark .brutal-select {
+    @apply bg-dark-card border-dark-border text-white focus:border-primary-400;
+  }
+
+  /* Progress bar styles */
+  .progress-bar {
+    @apply w-full h-2 bg-gray-200 border-2 border-black;
+  }
+
+  .dark .progress-bar {
+    @apply bg-gray-700 border-dark-border;
+  }
+
+  .progress-fill {
+    @apply h-full bg-primary-500 transition-all duration-300 ease-out;
+  }
+
+  /* Blog content styles */
+  .blog-content h1 {
+    @apply text-3xl font-bold mb-4 text-black border-b-2 border-black pb-2;
+  }
+
+  .dark .blog-content h1 {
+    @apply text-white border-dark-border;
+  }
+
+  .blog-content h2 {
+    @apply text-2xl font-bold mb-3 text-black mt-6;
+  }
+
+  .dark .blog-content h2 {
+    @apply text-white;
+  }
+
+  .blog-content h3 {
+    @apply text-xl font-semibold mb-2 text-black mt-4;
+  }
+
+  .dark .blog-content h3 {
+    @apply text-white;
+  }
+
+  .blog-content p {
+    @apply mb-4 text-gray-700 leading-relaxed;
+  }
+
+  .dark .blog-content p {
+    @apply text-gray-300;
+  }
+
+  .blog-content ul, .blog-content ol {
+    @apply mb-4 pl-6;
+  }
+
+  .blog-content li {
+    @apply mb-2 text-gray-700;
+  }
+
+  .dark .blog-content li {
+    @apply text-gray-300;
+  }
+
+  .blog-content blockquote {
+    @apply border-l-4 border-primary-500 pl-4 italic bg-gray-50 py-2 my-4;
+  }
+
+  .dark .blog-content blockquote {
+    @apply bg-dark-card;
+  }
+
+  .blog-content code {
+    @apply bg-gray-100 px-1 py-0.5 text-sm font-mono border border-gray-300;
+  }
+
+  .dark .blog-content code {
+    @apply bg-dark-card border-dark-border text-gray-300;
+  }
+
+  .blog-content pre {
+    @apply bg-gray-100 p-4 overflow-x-auto border-2 border-black my-4;
+  }
+
+  .dark .blog-content pre {
+    @apply bg-dark-card border-dark-border;
+  }
+
+  .blog-content pre code {
+    @apply bg-transparent border-none p-0;
+  }
+
+  /* Animation utilities */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  /* Loading spinner */
+  .spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #5fb3b3;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+  }
+
+  .dark .spinner {
+    border-color: #404040;
+    border-top-color: #5fb3b3;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Card hover effects */
+  .card-hover {
+    transition: all 0.3s ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0px 0px #000;
+  }
+
+  .dark .card-hover:hover {
+    box-shadow: 4px 4px 0px 0px #404040;
+  }
+
+  /* Toast notifications styling */
+  .toast-success {
+    @apply bg-green-500 text-white border-2 border-black;
+  }
+
+  .toast-error {
+    @apply bg-red-500 text-white border-2 border-black;
+  }
+
+  .toast-info {
+    @apply bg-blue-500 text-white border-2 border-black;
+  }
+
+  .dark .toast-success,
+  .dark .toast-error,
+  .dark .toast-info {
+    @apply border-dark-border;
+  }
+}
+
+/* Utility classes */
+@layer utilities {
+  .text-shadow {
+    text-shadow: 2px 2px 0px #000;
+  }
+
+  .border-brutal {
+    border: 2px solid #000;
+  }
+
+  .dark .border-brutal {
+    border-color: #404040;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
