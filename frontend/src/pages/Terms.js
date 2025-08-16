@@ -9,7 +9,7 @@ const Terms = () => {
       <div className="prose dark:prose-invert max-w-none">
         <h2>1. Acceptance of Terms</h2>
         <p>
-          By accessing and using EduBlog, you accept and agree to be bound by the terms 
+          By accessing and using Blog360, you accept and agree to be bound by the terms 
           and provision of this agreement.
         </p>
         
@@ -27,14 +27,14 @@ const Terms = () => {
         
         <h2>4. Content Usage</h2>
         <p>
-          All content on EduBlog is protected by copyright. You may not reproduce, 
+          All content on Blog360 is protected by copyright. You may not reproduce, 
           distribute, or create derivative works without permission.
         </p>
         
         <h2>5. Contact</h2>
         <p>
           If you have any questions about these Terms and Conditions, please contact us 
-          at contact@edublog.com.
+          at contact@blog360.com.
         </p>
       </div>
     </div>

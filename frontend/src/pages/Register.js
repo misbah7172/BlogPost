@@ -71,7 +71,7 @@ const Register = () => {
 
       // Attempt registration
       await register(formData.name, formData.email, formData.password);
-      toast.success('Registration successful! Welcome to EduBlog!');
+      toast.success('Registration successful! Welcome to Blog360!');
       navigate('/');
     } catch (error) {
       toast.error(error.message || 'Registration failed. Please try again.');

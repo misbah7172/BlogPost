@@ -34,7 +34,7 @@ const Privacy = () => {
         <h2>5. Contact Us</h2>
         <p>
           If you have any questions about this Privacy Policy, please contact us at 
-          privacy@edublog.com.
+          privacy@blog360.com.
         </p>
       </div>
     </div>

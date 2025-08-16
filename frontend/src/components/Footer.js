@@ -46,7 +46,7 @@ const Footer = () => {
                 <BookOpen className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold text-black dark:text-white">
-                EduBlog
+                Blog360
               </span>
             </div>
             <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md">
@@ -60,7 +60,7 @@ const Footer = () => {
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-primary-500" />
                 <span className="text-gray-600 dark:text-gray-400">
-                  contact@edublog.com
+                  contact@blog360.com
                 </span>
               </div>
               <div className="flex items-center space-x-3">
@@ -163,7 +163,7 @@ const Footer = () => {
         <div className="border-t-2 border-gray-200 dark:border-dark-border pt-6 mt-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              © {currentYear} EduBlog. All rights reserved.
+              © {currentYear} Blog360. All rights reserved.
             </p>
             <div className="flex items-center space-x-6">
               <Link
