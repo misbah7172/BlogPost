@@ -37,10 +37,21 @@ const CreateBlog = () => {
 
   const fetchCategories = async () => {
     try {
+      console.log('Fetching categories from API...');
+      console.log('API URL:', process.env.REACT_APP_API_URL || 'http://localhost:5000/api');
       const response = await blogService.getCategories();
-      setCategories(response.categories || []);
+      console.log('Categories response:', response);
+      console.log('Categories count:', response?.length || 0);
+      setCategories(response || []);
+      if (response && response.length > 0) {
+        console.log('✅ Categories loaded successfully:', response.map(c => c.name));
+      } else {
+        console.warn('⚠️ No categories received from API');
+      }
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error('❌ Error fetching categories:', error);
+      console.error('Error details:', error.message);
+      toast.error('Failed to load categories');
     }
   };
 
