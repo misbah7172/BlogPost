@@ -32,7 +32,11 @@ const Header = () => {
   const navigation = [
     { name: 'Home', href: '/', icon: Home },
     { name: 'Blogs', href: '/blogs', icon: BookOpen },
-    { name: 'Subscribe', href: '/subscribe', icon: CreditCard },
+    // Only show Subscribe if user is not authenticated or doesn't have active subscription
+    ...((!isAuthenticated || user?.subscription_status !== 'active') ? 
+      [{ name: 'Subscribe', href: '/subscribe', icon: CreditCard }] : 
+      []
+    ),
   ];
 
   const isActive = (path) => {

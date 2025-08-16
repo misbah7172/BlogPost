@@ -99,7 +99,7 @@ export const AuthProvider = ({ children }) => {
             payload: { user } 
           });
           
-          // Optionally verify in background (don't logout on failure)
+          // Optionally verify in background (logout on 401/403 errors)
           authService.getProfile().then(response => {
             console.log('🔄 Background profile verification successful');
             if (response.user) {
@@ -110,7 +110,16 @@ export const AuthProvider = ({ children }) => {
               });
             }
           }).catch(error => {
-            console.log('⚠️ Background verification failed, but keeping user logged in');
+            console.log('⚠️ Background verification failed:', error.message);
+            // If the error suggests invalid token, logout the user
+            if (error.message.includes('Invalid token') || 
+                error.message.includes('Unauthorized') ||
+                error.message.includes('401') ||
+                error.message.includes('403')) {
+              console.log('🚪 Logging out due to invalid authentication');
+              authService.logout();
+              dispatch({ type: 'LOGOUT' });
+            }
           });
           
         } catch (parseError) {

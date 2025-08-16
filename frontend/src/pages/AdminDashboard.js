@@ -16,7 +16,8 @@ import {
   Download,
   Eye,
   Edit,
-  Trash2
+  Trash2,
+  Plus
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -38,6 +39,10 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  
+  // Transaction ID form state
+  const [newTransactionId, setNewTransactionId] = useState('');
+  const [addingTransaction, setAddingTransaction] = useState(false);
 
   const fetchAdminData = useCallback(async () => {
     try {
@@ -88,6 +93,32 @@ const AdminDashboard = () => {
     } catch (error) {
       toast.error(`Failed to ${action} transaction`);
       console.error('Transaction action error:', error);
+    }
+  };
+
+  const handleAddTransactionId = async (e) => {
+    e.preventDefault();
+    if (!newTransactionId.trim()) {
+      toast.error('Please enter a transaction ID');
+      return;
+    }
+
+    setAddingTransaction(true);
+    try {
+      // Approve the transaction directly using the existing approve endpoint
+      await transactionService.approveTransaction(newTransactionId.trim());
+      toast.success('Transaction ID approved and user subscription activated');
+      setNewTransactionId('');
+      fetchAdminData(); // Refresh data
+    } catch (error) {
+      if (error.response?.status === 404) {
+        toast.error('Transaction ID not found in pending transactions');
+      } else {
+        toast.error('Failed to approve transaction ID');
+      }
+      console.error('Add transaction ID error:', error);
+    } finally {
+      setAddingTransaction(false);
     }
   };
 
@@ -290,6 +321,7 @@ const AdminDashboard = () => {
             {[
               { id: 'overview', label: 'Overview', icon: TrendingUp },
               { id: 'transactions', label: 'Transactions', icon: CreditCard },
+              { id: 'add-transaction', label: 'Add Transaction ID', icon: Plus },
               { id: 'users', label: 'Users', icon: Users },
               { id: 'blogs', label: 'Blogs', icon: BookOpen },
               { id: 'settings', label: 'Settings', icon: Settings }
@@ -523,6 +555,75 @@ const AdminDashboard = () => {
                 </table>
               </div>
             )}
+          </div>
+        )}
+
+        {activeTab === 'add-transaction' && (
+          <div className="brutal-card p-6">
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-black dark:text-white border-b-2 border-black dark:border-dark-border pb-2 mb-4">
+                Approve Transaction ID
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 mb-6">
+                Enter the transaction ID you received from bKash to approve and activate a user's lifetime subscription.
+              </p>
+            </div>
+
+            <form onSubmit={handleAddTransactionId} className="max-w-md">
+              <div className="mb-4">
+                <label htmlFor="transactionId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Transaction ID *
+                </label>
+                <input
+                  type="text"
+                  id="transactionId"
+                  value={newTransactionId}
+                  onChange={(e) => setNewTransactionId(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-black dark:border-dark-border bg-white dark:bg-gray-800 text-black dark:text-white rounded-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="Enter bKash transaction ID"
+                  required
+                  disabled={addingTransaction}
+                />
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Example: 8A5B9C2D3E (10 character alphanumeric code)
+                </p>
+              </div>
+
+              <button
+                type="submit"
+                disabled={addingTransaction || !newTransactionId.trim()}
+                className="brutal-btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {addingTransaction ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Approving...
+                  </div>
+                ) : (
+                  <div className="flex items-center">
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Approve Transaction
+                  </div>
+                )}
+              </button>
+            </form>
+
+            <div className="mt-8 p-4 bg-yellow-50 dark:bg-yellow-900 border-l-4 border-yellow-400">
+              <div className="flex">
+                <AlertCircle className="h-5 w-5 text-yellow-400 mr-2 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                    Important Notes:
+                  </h4>
+                  <ul className="text-sm text-yellow-700 dark:text-yellow-300 mt-1 list-disc list-inside">
+                    <li>Only approve transaction IDs that you have verified in your bKash merchant account</li>
+                    <li>Each transaction ID can only be used once</li>
+                    <li>This will immediately activate the user's lifetime subscription</li>
+                    <li>Make sure the payment amount matches ৳30 for lifetime subscription</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

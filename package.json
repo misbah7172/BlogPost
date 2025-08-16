@@ -1,0 +1,28 @@
+{
+  "name": "blog-subscription-site",
+  "version": "1.0.0",
+  "description": "A full-stack React + Node.js + MySQL blog website with subscription system and bKash payment integration",
+  "scripts": {
+    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "init-db": "cd backend && npm run init-db",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm start",
+    "start": "npm run dev",
+    "build": "cd frontend && npm run build",
+    "setup": "npm run install-all && npm run init-db"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "keywords": [
+    "blog",
+    "subscription",
+    "react",
+    "nodejs",
+    "mysql",
+    "bkash"
+  ],
+  "author": "Your Name",
+  "license": "ISC"
+}

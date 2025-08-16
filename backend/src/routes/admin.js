@@ -16,6 +16,12 @@ router.get('/activity/recent', AdminController.getRecentActivity);
 router.get('/users', AdminController.getAllUsers);
 router.put('/users/:userId/subscription', AdminController.updateUserSubscription);
 
+// Blog management
+router.get('/blogs', AdminController.getAllBlogs);
+router.get('/blogs/:id', AdminController.getBlogById);
+router.put('/blogs/:id/status', AdminController.updateBlogStatus);
+router.delete('/blogs/:id', AdminController.deleteBlog);
+
 // Transaction management
 router.post('/transactions/bulk-approve', AdminController.bulkApproveTransactions);
 

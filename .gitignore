@@ -230,4 +230,4 @@ tramp
 .\#*
 
 # Project specific
-.env.example
+# (Add project-specific ignore patterns here)

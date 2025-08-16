@@ -1,82 +1,54 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Check, Crown, Clock, Smartphone, Copy } from 'lucide-react';
+import { Check, Crown, Smartphone, Copy, AlertCircle, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { transactionService } from '../services/transactionService';
 
 const Subscribe = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [selectedPlan, setSelectedPlan] = useState('monthly');
   const [transactionId, setTransactionId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
 
-  const plans = [
-    {
-      id: 'monthly',
-      name: 'Monthly',
-      price: 30,
-      duration: '1 month',
-      features: [
-        'Access to all premium content',
-        'Ad-free reading experience',
-        'Download articles for offline reading',
-        'Priority customer support'
-      ]
-    },
-    {
-      id: 'quarterly',
-      name: 'Quarterly',
-      price: 80,
-      duration: '3 months',
-      originalPrice: 90,
-      popular: true,
-      features: [
-        'All monthly features',
-        'Save 11% compared to monthly',
-        'Exclusive quarterly newsletters',
-        'Early access to new features'
-      ]
-    },
-    {
-      id: 'yearly',
-      name: 'Yearly',
-      price: 300,
-      duration: '12 months',
-      originalPrice: 360,
-      features: [
-        'All quarterly features',
-        'Save 17% compared to monthly',
-        'Annual subscriber badge',
-        'Free access to webinars',
-        'Direct author interaction'
-      ]
-    }
-  ];
+  const lifetimePlan = {
+    id: 'lifetime',
+    name: 'Lifetime Access',
+    price: 30,
+    duration: 'Forever',
+    features: [
+      'Unlimited access to all premium content',
+      'Ad-free reading experience',
+      'Download articles for offline reading',
+      'Priority customer support',
+      'Access to all future content',
+      'No monthly charges ever',
+      'Exclusive member community access',
+      'Early access to new features'
+    ]
+  };
 
   const bkashNumber = '+8801824032222';
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      toast.error('Please login to subscribe');
-      navigate('/login');
-    }
-  }, [isAuthenticated, navigate]);
 
   const copyBkashNumber = () => {
     navigator.clipboard.writeText(bkashNumber);
     toast.success('bKash number copied to clipboard');
   };
 
-  const handlePlanSelect = (planId) => {
-    setSelectedPlan(planId);
+  const handleSubscribeClick = () => {
     setShowPaymentForm(true);
   };
 
   const handleSubmitTransaction = async (e) => {
     e.preventDefault();
+    
+    // Check authentication first
+    if (!isAuthenticated) {
+      toast.error('Please login to submit a transaction');
+      navigate('/login');
+      return;
+    }
     
     if (!transactionId.trim()) {
       toast.error('Please enter the transaction ID');
@@ -86,15 +58,13 @@ const Subscribe = () => {
     setIsSubmitting(true);
     
     try {
-      const selectedPlanData = plans.find(plan => plan.id === selectedPlan);
-      
       await transactionService.submitTransaction({
         trxId: transactionId,
-        amount: selectedPlanData.price,
-        planType: selectedPlan
+        amount: lifetimePlan.price,
+        planType: 'lifetime'
       });
 
-      toast.success('Transaction submitted successfully! We will verify and activate your subscription within 24 hours.');
+      toast.success('Transaction submitted successfully! We will verify and activate your lifetime subscription within 24 hours.');
       setTransactionId('');
       setShowPaymentForm(false);
       
@@ -117,12 +87,6 @@ const Subscribe = () => {
     }
   };
 
-  const selectedPlanData = plans.find(plan => plan.id === selectedPlan);
-
-  if (!isAuthenticated) {
-    return null;
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -142,63 +106,50 @@ const Subscribe = () => {
         </div>
 
         {!showPaymentForm ? (
-          /* Pricing Plans */
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            {plans.map((plan) => (
-              <div
-                key={plan.id}
-                className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden transition-transform hover:scale-105 ${
-                  plan.popular ? 'ring-2 ring-yellow-400 transform scale-105' : ''
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white text-center py-2 text-sm font-medium">
-                    Most Popular
-                  </div>
-                )}
-                
-                <div className="p-8">
-                  <div className="text-center mb-8">
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                      {plan.name}
-                    </h3>
-                    <div className="mb-4">
-                      <span className="text-4xl font-bold text-gray-900 dark:text-white">
-                        ৳{plan.price}
-                      </span>
-                      {plan.originalPrice && (
-                        <span className="text-lg text-gray-500 line-through ml-2">
-                          ৳{plan.originalPrice}
-                        </span>
-                      )}
-                      <span className="text-gray-600 dark:text-gray-400 block text-sm">
-                        for {plan.duration}
-                      </span>
-                    </div>
-                  </div>
-
-                  <ul className="space-y-4 mb-8">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start">
-                        <Check className="h-5 w-5 text-green-500 mt-0.5 mr-3 flex-shrink-0" />
-                        <span className="text-gray-700 dark:text-gray-300">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <button
-                    onClick={() => handlePlanSelect(plan.id)}
-                    className={`w-full py-3 px-6 rounded-xl font-medium transition-colors ${
-                      plan.popular
-                        ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white hover:from-yellow-500 hover:to-yellow-700'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
-                  >
-                    Choose {plan.name}
-                  </button>
-                </div>
+          /* Lifetime Plan */
+          <div className="max-w-2xl mx-auto">
+            <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white text-center py-2 text-sm font-medium">
+                ⭐ Lifetime Access - Best Value
               </div>
-            ))}
+              
+              <div className="p-8 pt-16">
+                <div className="text-center mb-8">
+                  <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                    {lifetimePlan.name}
+                  </h3>
+                  <div className="mb-6">
+                    <span className="text-5xl font-bold text-gray-900 dark:text-white">
+                      ৳{lifetimePlan.price}
+                    </span>
+                    <span className="text-gray-600 dark:text-gray-400 block text-lg mt-2">
+                      One-time payment • {lifetimePlan.duration}
+                    </span>
+                  </div>
+                  <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
+                    <p className="text-green-800 dark:text-green-200 font-medium">
+                      🎉 Special Launch Offer - Pay once, access forever!
+                    </p>
+                  </div>
+                </div>
+
+                <ul className="space-y-4 mb-8">
+                  {lifetimePlan.features.map((feature, index) => (
+                    <li key={index} className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mt-0.5 mr-3 flex-shrink-0" />
+                      <span className="text-gray-700 dark:text-gray-300">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  onClick={handleSubscribeClick}
+                  className="w-full py-4 px-6 rounded-xl font-medium text-lg bg-gradient-to-r from-yellow-400 to-yellow-600 text-white hover:from-yellow-500 hover:to-yellow-700 transition-colors"
+                >
+                  Get Lifetime Access - ৳{lifetimePlan.price}
+                </button>
+              </div>
+            </div>
           </div>
         ) : (
           /* Payment Form */
@@ -210,7 +161,7 @@ const Subscribe = () => {
                 </h2>
                 <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
                   <p className="text-yellow-800 dark:text-yellow-200 font-medium">
-                    Selected Plan: {selectedPlanData.name} - ৳{selectedPlanData.price}
+                    Selected Plan: {lifetimePlan.name} - ৳{lifetimePlan.price}
                   </p>
                 </div>
               </div>
@@ -236,7 +187,7 @@ const Subscribe = () => {
                       </button>
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                      Send exactly ৳{selectedPlanData.price} to this bKash number
+                      Send exactly ৳{lifetimePlan.price} to this bKash number
                     </p>
                   </div>
 
@@ -269,7 +220,7 @@ const Subscribe = () => {
                   />
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                  Amount: ৳{selectedPlanData.price}
+                  Amount: ৳{lifetimePlan.price}
                 </p>
               </div>
 

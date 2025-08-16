@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { blogService } from '../services/blogService';
+import { categoryService } from '../services/categoryService';
 import { Clock, User, Tag, Lock, Heart, BookOpen } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -17,9 +18,9 @@ const BlogList = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await blogService.getCategories();
+      const response = await categoryService.getCategoryStats();
       console.log('📋 Categories fetched:', response);
-      setCategories(response.categories || []);
+      setCategories(response || []);
     } catch (error) {
       console.error('❌ Error fetching categories:', error);
       toast.error('Failed to fetch categories');
@@ -131,8 +132,8 @@ const BlogList = () => {
             >
               <option value="">All Categories</option>
               {categories.map(category => (
-                <option key={category.id || category.name} value={category.name}>
-                  {category.name} {category.count > 0 && `(${category.count})`}
+                <option key={category.id} value={category.slug}>
+                  {category.name} {category.blog_count !== undefined && `(${category.blog_count})`}
                 </option>
               ))}
             </select>

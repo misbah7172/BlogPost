@@ -24,7 +24,7 @@ A full-stack React + Node.js + MySQL blog website with subscription system and b
 ### Payment System
 - **bKash QR Code**: Display QR code for payments
 - **Transaction Verification**: Manual and automatic verification
-- **Multiple Plans**: Monthly, Quarterly, Yearly subscriptions
+- **Multiple Plans**: Lifetime subscription for ৳30 with manual verification
 - **SMS Integration**: Auto-approval via SMS webhook
 
 ## 🛠️ Tech Stack
@@ -139,36 +139,17 @@ cd backend
 npm install
 ```
 
-Create `.env` file:
-```env
-# Database Configuration
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=your_mysql_password
-DB_NAME=blog_subscription_db
-DB_PORT=3306
-
-# JWT Configuration
-JWT_SECRET=your_super_secret_jwt_key_here_make_it_very_long_and_random
-JWT_EXPIRES_IN=7d
-
-# Server Configuration
-PORT=5000
-NODE_ENV=development
-
-# Email Configuration
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_app_password
-
-# bKash Configuration
-BKASH_QR_CODE_URL=https://your-bkash-qr-code-image-url.jpg
-BKASH_MERCHANT_NUMBER=01XXXXXXXXX
-
-# Frontend URL
-FRONTEND_URL=http://localhost:3000
+Create `.env` file from example:
+```bash
+cp .env.example .env
 ```
+
+Then edit `.env` with your actual configuration values:
+- Database credentials for your MySQL server
+- JWT secret (use a long, random string)
+- Email settings for notifications (optional)
+- bKash payment configuration (optional)
+- Admin credentials
 
 Initialize the database:
 ```bash
@@ -187,10 +168,15 @@ cd ../frontend
 npm install
 ```
 
-Create `.env` file (optional):
-```env
-REACT_APP_API_URL=http://localhost:5000/api
+Create `.env` file from example:
+```bash
+cp .env.example .env
 ```
+
+Edit `.env` if needed (defaults should work for local development):
+- API URL (defaults to http://localhost:5000/api)
+- App name and description
+- bKash QR code URL (optional)
 
 Start the frontend development server:
 ```bash

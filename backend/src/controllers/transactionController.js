@@ -6,7 +6,7 @@ class TransactionController {
   // Validation rules
   static validateTransaction = [
     body('trxId').trim().isLength({ min: 8, max: 50 }).withMessage('Transaction ID must be 8-50 characters'),
-    body('planType').isIn(['monthly', 'quarterly', 'yearly']).withMessage('Invalid plan type'),
+    body('planType').isIn(['lifetime', 'monthly', 'quarterly', 'yearly']).withMessage('Invalid plan type'),
     body('amount').isFloat({ min: 0 }).withMessage('Amount must be a positive number')
   ];
 
@@ -159,12 +159,14 @@ class TransactionController {
       const { page = 1, limit = 10 } = req.query;
       const offset = (page - 1) * limit;
 
-      const [transactions] = await require('../config/database').pool.execute(`
+      const { pool } = require('../config/database');
+      const result = await pool.query(`
         SELECT * FROM transactions 
-        WHERE user_id = ? 
+        WHERE user_id = $1 
         ORDER BY created_at DESC 
-        LIMIT ? OFFSET ?
+        LIMIT $2 OFFSET $3
       `, [req.user.id, parseInt(limit), parseInt(offset)]);
+      const transactions = result.rows;
 
       res.json({
         transactions,

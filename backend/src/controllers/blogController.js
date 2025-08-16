@@ -6,6 +6,7 @@ class BlogController {
   static validateBlog = [
     body('title').trim().isLength({ min: 3, max: 500 }).withMessage('Title must be 3-500 characters'),
     body('category').trim().isLength({ min: 2, max: 100 }).withMessage('Category must be 2-100 characters'),
+    body('categoryId').optional().isInt({ min: 1 }).withMessage('Category ID must be a positive integer'),
     body('content').trim().isLength({ min: 10 }).withMessage('Content must be at least 10 characters'),
     body('excerpt').optional().trim().isLength({ max: 500 }).withMessage('Excerpt must be max 500 characters'),
     body('tags').optional().trim(),
@@ -105,12 +106,13 @@ class BlogController {
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { title, category, tags, content, excerpt, isPremium } = req.body;
+      const { title, category, categoryId, tags, content, excerpt, isPremium } = req.body;
       const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
       const blogId = await Blog.create({
         title,
         category,
+        categoryId,
         tags,
         content,
         excerpt,
@@ -274,6 +276,29 @@ class BlogController {
       });
     } catch (error) {
       console.error('Get saved blogs error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  static async getPublicStats(req, res) {
+    try {
+      const Blog = require('../models/Blog');
+      const User = require('../models/User');
+      
+      const [blogStats, userStats] = await Promise.all([
+        Blog.getStats(),
+        User.getSubscriptionStats()
+      ]);
+
+      // Return public-friendly stats
+      res.json({
+        totalBlogs: blogStats.total_blogs || 0,
+        premiumBlogs: blogStats.premium_blogs || 0,
+        totalUsers: userStats.total_users || 0,
+        activeSubscribers: userStats.active_subscribers || 0
+      });
+    } catch (error) {
+      console.error('Get public stats error:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }

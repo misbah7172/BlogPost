@@ -11,7 +11,7 @@ const createDatabase = async () => {
   try {
     pool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false } // NeonDB always requires SSL
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
     });
     
     // Test connection

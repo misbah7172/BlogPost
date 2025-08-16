@@ -39,16 +39,25 @@ class AdminController {
         FROM users
       `;
       const params = [];
+      let paramCount = 0;
 
       if (subscription_status) {
-        query += ' WHERE subscription_status = ?';
+        paramCount++;
+        query += ` WHERE subscription_status = $${paramCount}`;
         params.push(subscription_status);
       }
 
-      query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-      params.push(parseInt(limit), parseInt(offset));
+      paramCount++;
+      query += ` ORDER BY created_at DESC LIMIT $${paramCount}`;
+      params.push(parseInt(limit));
+      
+      paramCount++;
+      query += ` OFFSET $${paramCount}`;
+      params.push(parseInt(offset));
 
-      const [users] = await require('../config/database').pool.execute(query, params);
+      const { pool } = require('../config/database');
+      const result = await pool.query(query, params);
+      const users = result.rows;
 
       res.json({
         users,
@@ -93,16 +102,17 @@ class AdminController {
       const { pool } = require('../config/database');
 
       // Get recent transactions
-      const [recentTransactions] = await pool.execute(`
+      const recentTransactionsResult = await pool.query(`
         SELECT t.*, u.name as user_name, u.email as user_email
         FROM transactions t
         JOIN users u ON t.user_id = u.id
         ORDER BY t.created_at DESC
         LIMIT 10
       `);
+      const recentTransactions = recentTransactionsResult.rows;
 
       // Get recent comments
-      const [recentComments] = await pool.execute(`
+      const recentCommentsResult = await pool.query(`
         SELECT c.*, u.name as user_name, b.title as blog_title
         FROM comments c
         JOIN users u ON c.user_id = u.id
@@ -110,15 +120,17 @@ class AdminController {
         ORDER BY c.created_at DESC
         LIMIT 10
       `);
+      const recentComments = recentCommentsResult.rows;
 
       // Get recent blog views (if you implement view tracking)
-      const [recentBlogs] = await pool.execute(`
+      const recentBlogsResult = await pool.query(`
         SELECT b.*, u.name as author_name
         FROM blogs b
         JOIN users u ON b.author_id = u.id
         ORDER BY b.created_at DESC
         LIMIT 10
       `);
+      const recentBlogs = recentBlogsResult.rows;
 
       res.json({
         recentTransactions,
@@ -139,21 +151,21 @@ class AdminController {
       let dateFormat;
       switch (period) {
         case 'daily':
-          dateFormat = '%Y-%m-%d';
+          dateFormat = 'YYYY-MM-DD';
           break;
         case 'weekly':
-          dateFormat = '%Y-%u';
+          dateFormat = 'YYYY-WW';
           break;
         case 'yearly':
-          dateFormat = '%Y';
+          dateFormat = 'YYYY';
           break;
         default:
-          dateFormat = '%Y-%m';
+          dateFormat = 'YYYY-MM';
       }
 
-      const [revenueData] = await pool.execute(`
+      const result = await pool.query(`
         SELECT 
-          DATE_FORMAT(approved_at, ?) as period,
+          TO_CHAR(approved_at, $1) as period,
           COUNT(*) as transaction_count,
           SUM(amount) as total_revenue,
           plan_type
@@ -163,6 +175,7 @@ class AdminController {
         ORDER BY period DESC
         LIMIT 12
       `, [dateFormat]);
+      const revenueData = result.rows;
 
       res.json({ revenueData, period });
     } catch (error) {
@@ -206,31 +219,31 @@ class AdminController {
 
       switch (type) {
         case 'users':
-          const [users] = await pool.execute(`
+          const usersResult = await pool.query(`
             SELECT id, name, email, subscription_status, subscription_expiry, created_at
             FROM users
           `);
-          data = users;
+          data = usersResult.rows;
           filename = 'users_export';
           break;
 
         case 'transactions':
-          const [transactions] = await pool.execute(`
+          const transactionsResult = await pool.query(`
             SELECT t.*, u.name as user_name, u.email as user_email
             FROM transactions t
             JOIN users u ON t.user_id = u.id
           `);
-          data = transactions;
+          data = transactionsResult.rows;
           filename = 'transactions_export';
           break;
 
         case 'blogs':
-          const [blogs] = await pool.execute(`
+          const blogsResult = await pool.query(`
             SELECT b.*, u.name as author_name
             FROM blogs b
             JOIN users u ON b.author_id = u.id
           `);
-          data = blogs;
+          data = blogsResult.rows;
           filename = 'blogs_export';
           break;
 
@@ -251,6 +264,174 @@ class AdminController {
       }
     } catch (error) {
       console.error('Export data error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  // Blog management methods
+  static async getAllBlogs(req, res) {
+    try {
+      const { page = 1, limit = 50, category, search, status } = req.query;
+      const offset = (page - 1) * limit;
+
+      let query = `
+        SELECT b.*, u.name as author_name, c.name as category_name, c.color as category_color,
+          (SELECT COUNT(*) FROM likes WHERE blog_id = b.id) as likes_count,
+          (SELECT COUNT(*) FROM comments WHERE blog_id = b.id) as comments_count,
+          (SELECT COUNT(*) FROM saved_posts WHERE blog_id = b.id) as saves_count
+        FROM blogs b
+        LEFT JOIN users u ON b.author_id = u.id
+        LEFT JOIN categories c ON b.category_id = c.id
+        WHERE 1=1
+      `;
+      const params = [];
+      let paramCount = 0;
+
+      if (category) {
+        paramCount++;
+        query += ` AND (b.category = $${paramCount}`;
+        params.push(category);
+        paramCount++;
+        query += ` OR c.slug = $${paramCount})`;
+        params.push(category);
+      }
+
+      if (search) {
+        const searchTerm = `%${search}%`;
+        paramCount++;
+        query += ` AND (b.title ILIKE $${paramCount}`;
+        params.push(searchTerm);
+        paramCount++;
+        query += ` OR b.content ILIKE $${paramCount}`;
+        params.push(searchTerm);
+        paramCount++;
+        query += ` OR b.tags ILIKE $${paramCount})`;
+        params.push(searchTerm);
+      }
+
+      if (status === 'published') {
+        query += ' AND b.is_published = TRUE';
+      } else if (status === 'draft') {
+        query += ' AND b.is_published = FALSE';
+      } else if (status === 'premium') {
+        query += ' AND b.is_premium = TRUE';
+      }
+
+      paramCount++;
+      query += ` ORDER BY b.created_at DESC LIMIT $${paramCount}`;
+      params.push(parseInt(limit));
+      
+      paramCount++;
+      query += ` OFFSET $${paramCount}`;
+      params.push(parseInt(offset));
+
+      const { pool } = require('../config/database');
+      const result = await pool.query(query, params);
+      const blogs = result.rows;
+
+      // Get total count for pagination
+      let countQuery = `
+        SELECT COUNT(*) as total
+        FROM blogs b
+        LEFT JOIN categories c ON b.category_id = c.id
+        WHERE 1=1
+      `;
+      const countParams = [];
+      let countParamCount = 0;
+
+      if (category) {
+        countParamCount++;
+        countQuery += ` AND (b.category = $${countParamCount}`;
+        countParams.push(category);
+        countParamCount++;
+        countQuery += ` OR c.slug = $${countParamCount})`;
+        countParams.push(category);
+      }
+
+      if (search) {
+        const searchTerm = `%${search}%`;
+        countParamCount++;
+        countQuery += ` AND (b.title ILIKE $${countParamCount}`;
+        countParams.push(searchTerm);
+        countParamCount++;
+        countQuery += ` OR b.content ILIKE $${countParamCount}`;
+        countParams.push(searchTerm);
+        countParamCount++;
+        countQuery += ` OR b.tags ILIKE $${countParamCount})`;
+        countParams.push(searchTerm);
+      }
+
+      if (status === 'published') {
+        countQuery += ' AND b.is_published = TRUE';
+      } else if (status === 'draft') {
+        countQuery += ' AND b.is_published = FALSE';
+      } else if (status === 'premium') {
+        countQuery += ' AND b.is_premium = TRUE';
+      }
+
+      const countResult = await pool.query(countQuery, countParams);
+      const total = countResult.rows[0].total;
+
+      res.json({
+        blogs,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total: parseInt(total),
+          totalPages: Math.ceil(total / limit),
+          hasMore: (page * limit) < total
+        }
+      });
+    } catch (error) {
+      console.error('Get all blogs error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  static async getBlogById(req, res) {
+    try {
+      const { id } = req.params;
+      const blog = await Blog.findById(id);
+      
+      if (!blog) {
+        return res.status(404).json({ message: 'Blog not found' });
+      }
+      
+      res.json({ blog });
+    } catch (error) {
+      console.error('Get blog by ID error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  static async updateBlogStatus(req, res) {
+    try {
+      const { id } = req.params;
+      const { is_published, is_premium } = req.body;
+
+      const { pool } = require('../config/database');
+      await pool.query(
+        'UPDATE blogs SET is_published = $1, is_premium = $2 WHERE id = $3',
+        [is_published, is_premium, id]
+      );
+
+      res.json({ message: 'Blog status updated successfully' });
+    } catch (error) {
+      console.error('Update blog status error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  static async deleteBlog(req, res) {
+    try {
+      const { id } = req.params;
+
+      const { pool } = require('../config/database');
+      await pool.query('DELETE FROM blogs WHERE id = $1', [id]);
+
+      res.json({ message: 'Blog deleted successfully' });
+    } catch (error) {
+      console.error('Delete blog error:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }

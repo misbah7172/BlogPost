@@ -2,96 +2,101 @@ const { pool } = require('../config/database');
 
 class Blog {
   static async create(blogData) {
-    const { title, category, tags, content, excerpt, imageUrl, isPremium, authorId } = blogData;
+    const { title, category, categoryId, tags, content, excerpt, imageUrl, isPremium, authorId } = blogData;
     
-    const [result] = await pool.execute(
-      'INSERT INTO blogs (title, category, tags, content, excerpt, image_url, is_premium, author_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [title, category, tags, content, excerpt, imageUrl, isPremium, authorId]
+    const result = await pool.query(
+      'INSERT INTO blogs (title, category, category_id, tags, content, excerpt, image_url, is_premium, author_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id',
+      [title, category, categoryId, tags, content, excerpt, imageUrl, isPremium, authorId]
     );
     
-    return result.insertId;
+    return result.rows[0].id;
   }
 
   static async findAll(limit = 50, offset = 0, category = null, search = null) {
     let query = `
-      SELECT b.*, u.name as author_name,
+      SELECT b.*, u.name as author_name, c.name as category_name, c.color as category_color, c.icon as category_icon,
         (SELECT COUNT(*) FROM likes WHERE blog_id = b.id) as likes_count,
         (SELECT COUNT(*) FROM comments WHERE blog_id = b.id) as comments_count
       FROM blogs b
       LEFT JOIN users u ON b.author_id = u.id
+      LEFT JOIN categories c ON b.category_id = c.id
       WHERE b.is_published = TRUE
     `;
     const params = [];
+    let paramIndex = 1;
 
     if (category) {
-      query += ' AND b.category = ?';
-      params.push(category);
+      query += ` AND (b.category = $${paramIndex} OR c.slug = $${paramIndex + 1})`;
+      params.push(category, category);
+      paramIndex += 2;
     }
 
     if (search) {
-      query += ' AND (b.title LIKE ? OR b.content LIKE ? OR b.tags LIKE ?)';
+      query += ` AND (b.title ILIKE $${paramIndex} OR b.content ILIKE $${paramIndex + 1} OR b.tags ILIKE $${paramIndex + 2})`;
       params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+      paramIndex += 3;
     }
 
-    query += ' ORDER BY b.created_at DESC LIMIT ? OFFSET ?';
+    query += ` ORDER BY b.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
     params.push(limit, offset);
 
-    const [blogs] = await pool.execute(query, params);
-    return blogs;
+    const result = await pool.query(query, params);
+    return result.rows;
   }
 
   static async findById(id) {
-    const [blogs] = await pool.execute(`
-      SELECT b.*, u.name as author_name,
+    const result = await pool.query(`
+      SELECT b.*, u.name as author_name, c.name as category_name, c.color as category_color, c.icon as category_icon,
         (SELECT COUNT(*) FROM likes WHERE blog_id = b.id) as likes_count,
         (SELECT COUNT(*) FROM comments WHERE blog_id = b.id) as comments_count
       FROM blogs b
       LEFT JOIN users u ON b.author_id = u.id
-      WHERE b.id = ? AND b.is_published = TRUE
+      LEFT JOIN categories c ON b.category_id = c.id
+      WHERE b.id = $1 AND b.is_published = TRUE
     `, [id]);
-    return blogs[0];
+    return result.rows[0];
   }
 
   static async update(id, blogData) {
     const { title, category, tags, content, excerpt, imageUrl, isPremium } = blogData;
     
-    await pool.execute(
-      'UPDATE blogs SET title = ?, category = ?, tags = ?, content = ?, excerpt = ?, image_url = ?, is_premium = ? WHERE id = ?',
+    await pool.query(
+      'UPDATE blogs SET title = $1, category = $2, tags = $3, content = $4, excerpt = $5, image_url = $6, is_premium = $7 WHERE id = $8',
       [title, category, tags, content, excerpt, imageUrl, isPremium, id]
     );
   }
 
   static async delete(id) {
-    await pool.execute('DELETE FROM blogs WHERE id = ?', [id]);
+    await pool.query('DELETE FROM blogs WHERE id = $1', [id]);
   }
 
   static async getCategories() {
-    const [categories] = await pool.execute(
+    const result = await pool.query(
       'SELECT DISTINCT category, COUNT(*) as count FROM blogs WHERE is_published = TRUE GROUP BY category ORDER BY category'
     );
-    return categories;
+    return result.rows;
   }
 
   static async checkUserLike(blogId, userId) {
-    const [likes] = await pool.execute(
-      'SELECT id FROM likes WHERE blog_id = ? AND user_id = ?',
+    const result = await pool.query(
+      'SELECT id FROM likes WHERE blog_id = $1 AND user_id = $2',
       [blogId, userId]
     );
-    return likes.length > 0;
+    return result.rows.length > 0;
   }
 
   static async toggleLike(blogId, userId) {
     const isLiked = await this.checkUserLike(blogId, userId);
     
     if (isLiked) {
-      await pool.execute(
-        'DELETE FROM likes WHERE blog_id = ? AND user_id = ?',
+      await pool.query(
+        'DELETE FROM likes WHERE blog_id = $1 AND user_id = $2',
         [blogId, userId]
       );
       return false; // unliked
     } else {
-      await pool.execute(
-        'INSERT INTO likes (blog_id, user_id) VALUES (?, ?)',
+      await pool.query(
+        'INSERT INTO likes (blog_id, user_id) VALUES ($1, $2) ON CONFLICT (blog_id, user_id) DO NOTHING',
         [blogId, userId]
       );
       return true; // liked
@@ -99,25 +104,25 @@ class Blog {
   }
 
   static async checkUserSave(blogId, userId) {
-    const [saves] = await pool.execute(
-      'SELECT id FROM saved_posts WHERE blog_id = ? AND user_id = ?',
+    const result = await pool.query(
+      'SELECT id FROM saved_posts WHERE blog_id = $1 AND user_id = $2',
       [blogId, userId]
     );
-    return saves.length > 0;
+    return result.rows.length > 0;
   }
 
   static async toggleSave(blogId, userId) {
     const isSaved = await this.checkUserSave(blogId, userId);
     
     if (isSaved) {
-      await pool.execute(
-        'DELETE FROM saved_posts WHERE blog_id = ? AND user_id = ?',
+      await pool.query(
+        'DELETE FROM saved_posts WHERE blog_id = $1 AND user_id = $2',
         [blogId, userId]
       );
       return false; // unsaved
     } else {
-      await pool.execute(
-        'INSERT INTO saved_posts (blog_id, user_id) VALUES (?, ?)',
+      await pool.query(
+        'INSERT INTO saved_posts (blog_id, user_id) VALUES ($1, $2) ON CONFLICT (blog_id, user_id) DO NOTHING',
         [blogId, userId]
       );
       return true; // saved
@@ -125,7 +130,7 @@ class Blog {
   }
 
   static async getStats() {
-    const [stats] = await pool.execute(`
+    const result = await pool.query(`
       SELECT 
         COUNT(*) as total_blogs,
         SUM(CASE WHEN is_premium = TRUE THEN 1 ELSE 0 END) as premium_blogs,
@@ -135,11 +140,11 @@ class Blog {
       FROM blogs
       WHERE is_published = TRUE
     `);
-    return stats[0];
+    return result.rows[0];
   }
 
   static async getSavedBlogs(userId) {
-    const [blogs] = await pool.execute(`
+    const result = await pool.query(`
       SELECT b.*, u.name as author_name,
         (SELECT COUNT(*) FROM likes WHERE blog_id = b.id) as likes_count,
         (SELECT COUNT(*) FROM comments WHERE blog_id = b.id) as comments_count,
@@ -147,10 +152,10 @@ class Blog {
       FROM saved_posts sp
       JOIN blogs b ON sp.blog_id = b.id
       LEFT JOIN users u ON b.author_id = u.id
-      WHERE sp.user_id = ? AND b.is_published = TRUE
+      WHERE sp.user_id = $1 AND b.is_published = TRUE
       ORDER BY sp.created_at DESC
     `, [userId]);
-    return blogs;
+    return result.rows;
   }
 }
 

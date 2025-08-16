@@ -18,18 +18,26 @@ const Home = () => {
       try {
         setLoading(true);
         
-        // Fetch featured blogs (latest 6 blogs)
-        const blogsResponse = await blogService.getBlogs({ limit: 6 });
+        // Fetch featured blogs and real stats
+        const [blogsResponse, statsResponse] = await Promise.all([
+          blogService.getBlogs({ limit: 6 }),
+          blogService.getStats()
+        ]);
+        
         setFeaturedBlogs(blogsResponse.blogs || []);
-
-        // You can fetch stats from admin API if available
         setStats({
-          totalBlogs: 150,
-          totalUsers: 1200,
-          premiumBlogs: 45
+          totalBlogs: statsResponse.totalBlogs || 0,
+          totalUsers: statsResponse.totalUsers || 0,
+          premiumBlogs: statsResponse.premiumBlogs || 0
         });
       } catch (error) {
         console.error('Error fetching home data:', error);
+        // Fallback to default values if API fails
+        setStats({
+          totalBlogs: 0,
+          totalUsers: 0,
+          premiumBlogs: 0
+        });
       } finally {
         setLoading(false);
       }
@@ -87,10 +95,16 @@ const Home = () => {
                     Get Started Free
                   </Button>
                 </Link>
-              ) : (
+              ) : user?.subscription_status !== 'active' ? (
                 <Link to="/subscribe">
                   <Button size="lg" variant="outline" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-primary-600">
                     Upgrade to Premium
+                  </Button>
+                </Link>
+              ) : (
+                <Link to="/dashboard">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-primary-600">
+                    Go to Dashboard
                   </Button>
                 </Link>
               )}
@@ -245,39 +259,41 @@ const Home = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-accent-500 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-shadow">
-            Ready to Level Up Your Skills?
-          </h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Join our premium community and get access to exclusive content, 
-            advanced tutorials, and personalized learning paths.
-          </p>
-          {!isAuthenticated ? (
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/register">
-                <Button size="lg" variant="secondary" className="w-full sm:w-auto">
-                  Start Learning Today
-                </Button>
-              </Link>
+      {/* CTA Section - Only show if user doesn't have active subscription */}
+      {(!isAuthenticated || user?.subscription_status !== 'active') && (
+        <section className="py-16 bg-accent-500 text-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-shadow">
+              Ready to Level Up Your Skills?
+            </h2>
+            <p className="text-xl mb-8 max-w-2xl mx-auto">
+              Join our premium community and get access to exclusive content, 
+              advanced tutorials, and personalized learning paths.
+            </p>
+            {!isAuthenticated ? (
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link to="/register">
+                  <Button size="lg" variant="secondary" className="w-full sm:w-auto">
+                    Start Learning Today
+                  </Button>
+                </Link>
+                <Link to="/subscribe">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-accent-600">
+                    View Premium Plans
+                  </Button>
+                </Link>
+              </div>
+            ) : (
               <Link to="/subscribe">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-accent-600">
-                  View Premium Plans
+                <Button size="lg" variant="secondary">
+                  Upgrade to Premium
+                  <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
-            </div>
-          ) : (
-            <Link to="/subscribe">
-              <Button size="lg" variant="secondary">
-                Upgrade to Premium
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-            </Link>
-          )}
-        </div>
-      </section>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 };

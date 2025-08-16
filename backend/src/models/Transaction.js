@@ -4,63 +4,70 @@ class Transaction {
   static async create(transactionData) {
     const { userId, trxId, amount, planType } = transactionData;
     
-    const [result] = await pool.execute(
-      'INSERT INTO transactions (user_id, trx_id, amount, plan_type) VALUES (?, ?, ?, ?)',
+    const result = await pool.query(
+      'INSERT INTO transactions (user_id, trx_id, amount, plan_type) VALUES ($1, $2, $3, $4) RETURNING id',
       [userId, trxId, amount, planType]
     );
     
-    return result.insertId;
+    return result.rows[0].id;
   }
 
   static async findByTrxId(trxId) {
-    const [transactions] = await pool.execute(
-      'SELECT * FROM transactions WHERE trx_id = ?',
+    const result = await pool.query(
+      'SELECT * FROM transactions WHERE trx_id = $1',
       [trxId]
     );
-    return transactions[0];
+    return result.rows[0];
   }
 
   static async findPendingByTrxId(trxId) {
-    const [transactions] = await pool.execute(
-      'SELECT * FROM transactions WHERE trx_id = ? AND status = "pending"',
-      [trxId]
+    const result = await pool.query(
+      'SELECT * FROM transactions WHERE trx_id = $1 AND status = $2',
+      [trxId, 'pending']
     );
-    return transactions[0];
+    return result.rows[0];
   }
 
   static async approve(trxId) {
-    const [result] = await pool.execute(
-      'UPDATE transactions SET status = "approved", approved_at = NOW() WHERE trx_id = ? AND status = "pending"',
-      [trxId]
+    const result = await pool.query(
+      'UPDATE transactions SET status = $1, approved_at = CURRENT_TIMESTAMP WHERE trx_id = $2 AND status = $3',
+      ['approved', trxId, 'pending']
     );
     
-    if (result.affectedRows > 0) {
+    if (result.rowCount > 0) {
       // Get transaction details to update user subscription
       const transaction = await this.findByTrxId(trxId);
       if (transaction) {
         const expiryDate = this.calculateExpiryDate(transaction.plan_type);
-        await pool.execute(
-          'UPDATE users SET subscription_status = "active", subscription_expiry = ? WHERE id = ?',
-          [expiryDate, transaction.user_id]
+        await pool.query(
+          'UPDATE users SET subscription_status = $1, subscription_expiry = $2 WHERE id = $3',
+          ['active', expiryDate, transaction.user_id]
         );
       }
     }
     
-    return result.affectedRows > 0;
+    return result.rowCount > 0;
   }
 
   static async reject(trxId) {
-    const [result] = await pool.execute(
-      'UPDATE transactions SET status = "rejected" WHERE trx_id = ? AND status = "pending"',
-      [trxId]
+    const result = await pool.query(
+      'UPDATE transactions SET status = $1 WHERE trx_id = $2 AND status = $3',
+      ['rejected', trxId, 'pending']
     );
-    return result.affectedRows > 0;
+    return result.rowCount > 0;
   }
 
   static calculateExpiryDate(planType) {
     const now = new Date();
-    const expiry = new Date(now);
+    
+    if (planType === 'lifetime') {
+      // For lifetime subscription, set expiry to 100 years from now
+      const expiry = new Date(now);
+      expiry.setFullYear(expiry.getFullYear() + 100);
+      return expiry;
+    }
 
+    const expiry = new Date(now);
     switch (planType) {
       case 'monthly':
         expiry.setMonth(expiry.getMonth() + 1);
@@ -85,21 +92,23 @@ class Transaction {
       JOIN users u ON t.user_id = u.id
     `;
     const params = [];
+    let paramIndex = 1;
 
     if (status) {
-      query += ' WHERE t.status = ?';
+      query += ` WHERE t.status = $${paramIndex}`;
       params.push(status);
+      paramIndex++;
     }
 
-    query += ' ORDER BY t.created_at DESC LIMIT ? OFFSET ?';
+    query += ` ORDER BY t.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
     params.push(limit, offset);
 
-    const [transactions] = await pool.execute(query, params);
-    return transactions;
+    const result = await pool.query(query, params);
+    return result.rows;
   }
 
   static async getStats() {
-    const [stats] = await pool.execute(`
+    const result = await pool.query(`
       SELECT 
         COUNT(*) as total_transactions,
         SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_transactions,
@@ -108,11 +117,12 @@ class Transaction {
         SUM(CASE WHEN status = 'approved' THEN amount ELSE 0 END) as total_revenue
       FROM transactions
     `);
-    return stats[0];
+    return result.rows[0];
   }
 
   static getPlanPrices() {
     return {
+      lifetime: 30.00,
       monthly: 199.00,
       quarterly: 499.00,
       yearly: 1599.00

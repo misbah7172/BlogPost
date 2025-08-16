@@ -12,6 +12,7 @@ const blogRoutes = require('./src/routes/blogs');
 const transactionRoutes = require('./src/routes/transactions');
 const commentRoutes = require('./src/routes/comments');
 const adminRoutes = require('./src/routes/admin');
+const categoryRoutes = require('./src/routes/categories');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -85,6 +86,7 @@ app.use('/api/blogs', blogRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/categories', categoryRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

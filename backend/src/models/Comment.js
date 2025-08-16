@@ -4,69 +4,69 @@ class Comment {
   static async create(commentData) {
     const { blogId, userId, content } = commentData;
     
-    const [result] = await pool.execute(
-      'INSERT INTO comments (blog_id, user_id, content) VALUES (?, ?, ?)',
+    const result = await pool.query(
+      'INSERT INTO comments (blog_id, user_id, content) VALUES ($1, $2, $3) RETURNING id',
       [blogId, userId, content]
     );
     
-    return result.insertId;
+    return result.rows[0].id;
   }
 
   static async findByBlogId(blogId) {
-    const [comments] = await pool.execute(`
+    const result = await pool.query(`
       SELECT c.*, u.name as user_name
       FROM comments c
       JOIN users u ON c.user_id = u.id
-      WHERE c.blog_id = ?
+      WHERE c.blog_id = $1
       ORDER BY c.created_at DESC
     `, [blogId]);
     
-    return comments;
+    return result.rows;
   }
 
   static async findById(id) {
-    const [comments] = await pool.execute(`
+    const result = await pool.query(`
       SELECT c.*, u.name as user_name
       FROM comments c
       JOIN users u ON c.user_id = u.id
-      WHERE c.id = ?
+      WHERE c.id = $1
     `, [id]);
     
-    return comments[0];
+    return result.rows[0];
   }
 
   static async delete(id, userId, userRole = 'user') {
-    let query = 'DELETE FROM comments WHERE id = ?';
+    let query = 'DELETE FROM comments WHERE id = $1';
     let params = [id];
 
     // Only allow deletion by comment owner or admin
     if (userRole !== 'admin') {
-      query += ' AND user_id = ?';
+      query += ' AND user_id = $2';
       params.push(userId);
     }
 
-    const [result] = await pool.execute(query, params);
-    return result.affectedRows > 0;
+    const result = await pool.query(query, params);
+    return result.rowCount > 0;
   }
 
   static async update(id, userId, content) {
-    const [result] = await pool.execute(
-      'UPDATE comments SET content = ?, updated_at = NOW() WHERE id = ? AND user_id = ?',
+    const result = await pool.query(
+      'UPDATE comments SET content = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND user_id = $3',
       [content, id, userId]
     );
     
-    return result.affectedRows > 0;
+    return result.rowCount > 0;
   }
 
   static async getStats() {
-    const [stats] = await pool.execute(`
+    const result = await pool.query(`
       SELECT 
         COUNT(*) as total_comments,
         COUNT(DISTINCT user_id) as unique_commenters,
         COUNT(DISTINCT blog_id) as blogs_with_comments
       FROM comments
     `);
-    return stats[0];
+    return result.rows[0];
   }
 }
 

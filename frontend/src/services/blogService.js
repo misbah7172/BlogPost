@@ -20,9 +20,9 @@ export const blogService = {
     return await apiRequest(`/blogs/${id}`);
   },
 
-  // Get blog categories
+  // Get blog categories (deprecated - use categoryService.getCategories)
   getCategories: async () => {
-    return await apiRequest('/blogs/categories');
+    return await apiRequest('/categories');
   },
 
   // Like/unlike blog
@@ -122,5 +122,10 @@ export const blogService = {
   // Get blog comments
   getComments: async (blogId) => {
     return await apiRequest(`/comments/blog/${blogId}`);
+  },
+
+  // Get public statistics
+  getStats: async () => {
+    return await apiRequest('/blogs/stats');
   },
 };
