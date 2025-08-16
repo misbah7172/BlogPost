@@ -199,30 +199,30 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-cream dark:bg-dark-bg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-black dark:text-white mb-2 border-b-4 border-black dark:border-dark-border pb-2">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-black dark:text-white mb-2 border-b-4 border-black dark:border-dark-border pb-2">
             Admin Dashboard
           </h1>
-          <p className="text-gray-700 dark:text-gray-300">
+          <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300">
             Manage users, transactions, and content across the platform.
           </p>
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-6 mb-8">
           {/* Total Users */}
-          <div className="brutal-card p-6">
-            <div className="flex items-center">
-              <div className="p-3 border-2 border-black dark:border-dark-border bg-primary-500">
-                <Users className="h-6 w-6 text-white" />
+          <div className="brutal-card admin-stat-card p-4 sm:p-6">
+            <div className="flex items-center stat-content">
+              <div className="p-2 sm:p-3 border-2 border-black dark:border-dark-border bg-primary-500 stat-icon">
+                <Users className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <div className="ml-3 sm:ml-4">
+                <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
                   Total Users
                 </p>
-                <p className="text-2xl font-bold text-black dark:text-white">
+                <p className="text-xl sm:text-2xl font-bold text-black dark:text-white">
                   {stats.totalUsers}
                 </p>
               </div>
@@ -230,16 +230,16 @@ const AdminDashboard = () => {
           </div>
 
           {/* Active Subscriptions */}
-          <div className="brutal-card p-6">
-            <div className="flex items-center">
-              <div className="p-3 border-2 border-black dark:border-dark-border bg-green-500">
-                <CheckCircle className="h-6 w-6 text-white" />
+          <div className="brutal-card admin-stat-card p-4 sm:p-6">
+            <div className="flex items-center stat-content">
+              <div className="p-2 sm:p-3 border-2 border-black dark:border-dark-border bg-green-500 stat-icon">
+                <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <div className="ml-3 sm:ml-4">
+                <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
                   Active Subs
                 </p>
-                <p className="text-2xl font-bold text-black dark:text-white">
+                <p className="text-xl sm:text-2xl font-bold text-black dark:text-white">
                   {stats.activeSubscriptions}
                 </p>
               </div>
@@ -247,16 +247,16 @@ const AdminDashboard = () => {
           </div>
 
           {/* Total Revenue */}
-          <div className="brutal-card p-6">
-            <div className="flex items-center">
-              <div className="p-3 border-2 border-black dark:border-dark-border bg-accent-500">
-                <TrendingUp className="h-6 w-6 text-white" />
+          <div className="brutal-card admin-stat-card p-4 sm:p-6">
+            <div className="flex items-center stat-content">
+              <div className="p-2 sm:p-3 border-2 border-black dark:border-dark-border bg-accent-500 stat-icon">
+                <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <div className="ml-3 sm:ml-4">
+                <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
                   Revenue
                 </p>
-                <p className="text-2xl font-bold text-black dark:text-white">
+                <p className="text-xl sm:text-2xl font-bold text-black dark:text-white">
                   {formatCurrency(stats.totalRevenue)}
                 </p>
               </div>
@@ -264,16 +264,16 @@ const AdminDashboard = () => {
           </div>
 
           {/* Pending Transactions */}
-          <div className="brutal-card p-6">
-            <div className="flex items-center">
-              <div className="p-3 border-2 border-black dark:border-dark-border bg-orange-500">
-                <AlertCircle className="h-6 w-6 text-white" />
+          <div className="brutal-card admin-stat-card p-4 sm:p-6">
+            <div className="flex items-center stat-content">
+              <div className="p-2 sm:p-3 border-2 border-black dark:border-dark-border bg-orange-500 stat-icon">
+                <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <div className="ml-3 sm:ml-4">
+                <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
                   Pending
                 </p>
-                <p className="text-2xl font-bold text-black dark:text-white">
+                <p className="text-xl sm:text-2xl font-bold text-black dark:text-white">
                   {stats.pendingTransactions}
                 </p>
               </div>
@@ -281,16 +281,16 @@ const AdminDashboard = () => {
           </div>
 
           {/* Total Blogs */}
-          <div className="brutal-card p-6">
-            <div className="flex items-center">
-              <div className="p-3 border-2 border-black dark:border-dark-border bg-purple-500">
-                <BookOpen className="h-6 w-6 text-white" />
+          <div className="brutal-card admin-stat-card p-4 sm:p-6">
+            <div className="flex items-center stat-content">
+              <div className="p-2 sm:p-3 border-2 border-black dark:border-dark-border bg-purple-500 stat-icon">
+                <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <div className="ml-3 sm:ml-4">
+                <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
                   Total Blogs
                 </p>
-                <p className="text-2xl font-bold text-black dark:text-white">
+                <p className="text-xl sm:text-2xl font-bold text-black dark:text-white">
                   {stats.totalBlogs}
                 </p>
               </div>
@@ -298,16 +298,16 @@ const AdminDashboard = () => {
           </div>
 
           {/* Premium Blogs */}
-          <div className="brutal-card p-6">
-            <div className="flex items-center">
-              <div className="p-3 border-2 border-black dark:border-dark-border bg-indigo-500">
-                <CreditCard className="h-6 w-6 text-white" />
+          <div className="brutal-card admin-stat-card p-4 sm:p-6">
+            <div className="flex items-center stat-content">
+              <div className="p-2 sm:p-3 border-2 border-black dark:border-dark-border bg-indigo-500 stat-icon">
+                <CreditCard className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <div className="ml-3 sm:ml-4">
+                <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
                   Premium
                 </p>
-                <p className="text-2xl font-bold text-black dark:text-white">
+                <p className="text-xl sm:text-2xl font-bold text-black dark:text-white">
                   {stats.premiumBlogs}
                 </p>
               </div>
@@ -317,7 +317,7 @@ const AdminDashboard = () => {
 
         {/* Tab Navigation */}
         <div className="mb-8">
-          <nav className="flex space-x-2">
+          <nav className="flex overflow-x-auto scrollbar-hide space-x-2 pb-2 admin-tabs">
             {[
               { id: 'overview', label: 'Overview', icon: TrendingUp },
               { id: 'transactions', label: 'Transactions', icon: CreditCard },
@@ -329,14 +329,19 @@ const AdminDashboard = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center px-4 py-3 font-medium border-2 border-black dark:border-dark-border transition-colors ${
+                className={`flex items-center px-3 sm:px-4 py-2 sm:py-3 font-medium border-2 border-black dark:border-dark-border transition-colors whitespace-nowrap text-sm sm:text-base ${
                   activeTab === tab.id
                     ? 'bg-primary-500 text-white'
                     : 'bg-white dark:bg-dark-card text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
-                <tab.icon className="h-4 w-4 mr-2" />
-                {tab.label}
+                <tab.icon className="h-4 w-4 mr-1 sm:mr-2 flex-shrink-0" />
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="sm:hidden">
+                  {tab.label === 'Add Transaction ID' ? 'Add ID' : 
+                   tab.label === 'Transactions' ? 'Trans' : 
+                   tab.label}
+                </span>
               </button>
             ))}
           </nav>
@@ -476,7 +481,7 @@ const AdminDashboard = () => {
                 ))}
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto scrollbar-hide">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                   <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
@@ -640,7 +645,7 @@ const AdminDashboard = () => {
                 ))}
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto scrollbar-hide">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                   <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>

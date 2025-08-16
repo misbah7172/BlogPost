@@ -267,4 +267,40 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Mobile optimizations for admin dashboard */
+  @media (max-width: 640px) {
+    .admin-tabs {
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    
+    .admin-tabs::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .admin-stat-card {
+      padding: 1rem !important;
+    }
+    
+    .admin-stat-card .stat-content {
+      flex-direction: column;
+      text-align: center;
+    }
+    
+    .admin-stat-card .stat-icon {
+      margin-bottom: 0.5rem;
+      margin-right: 0;
+    }
+  }
 }
