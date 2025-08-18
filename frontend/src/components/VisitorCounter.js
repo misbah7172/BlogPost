@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaEye } from 'react-icons/fa';
+import { apiRequest } from '../services/api';
 
 const VisitorCounter = () => {
   const [visitorStats, setVisitorStats] = useState({
@@ -13,16 +14,13 @@ const VisitorCounter = () => {
   useEffect(() => {
     const recordVisit = async () => {
       try {
-        // Record the current visit
-        await fetch('/api/visitors/visit', {
+        // Record the current visit using the API service
+        await apiRequest('/visitors/visit', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+          body: {
             userAgent: navigator.userAgent,
             referrer: document.referrer
-          })
+          }
         });
       } catch (error) {
         console.error('Failed to record visit:', error);
@@ -31,11 +29,8 @@ const VisitorCounter = () => {
 
     const fetchVisitorStats = async () => {
       try {
-        const response = await fetch('/api/visitors/stats');
-        if (response.ok) {
-          const stats = await response.json();
-          setVisitorStats(stats);
-        }
+        const stats = await apiRequest('/visitors/stats');
+        setVisitorStats(stats);
       } catch (error) {
         console.error('Failed to fetch visitor stats:', error);
       } finally {
