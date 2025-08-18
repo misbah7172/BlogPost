@@ -2,7 +2,7 @@
 
 A full-stack React + Node.js + MySQL blog website with subscription system and bKash QR payment integration.
 
-##  Features
+## 🚀 Features
 
 ### Core Functionality
 - **Free & Premium Blogs**: Access control based on subscription status
@@ -14,7 +14,7 @@ A full-stack React + Node.js + MySQL blog website with subscription system and b
 - **Search & Filter**: Search blogs by title/content and filter by category
 - **Responsive Design**: Mobile-first design with dark/light mode
 
-## 🛠 Tech Stack
+## 🛠️ Tech Stack
 
 ### Backend
 - **Node.js** with Express.js
@@ -36,7 +36,7 @@ A full-stack React + Node.js + MySQL blog website with subscription system and b
 - **React Hot Toast** notifications
 - **Date-fns** date formatting
 
-##  Project Structure
+## 📁 Project Structure
 
 ```
 Blog_Post/
@@ -106,12 +106,17 @@ Blog_Post/
     └── package.json
 ```
 
-##  Getting Started
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 16+ 
+- MySQL 8.0+
+- Git
 
 ### 1. Clone the Repository
 ```bash
 git clone <repository-url>
-cd BlogPost
+cd Blog_Post
 ```
 
 ### 2. Setup Backend
@@ -127,11 +132,16 @@ cp .env.example .env
 ```
 
 Then edit `.env` with your actual configuration values:
-- Database credentials for your NeonDB server
+- Database credentials for your MySQL server
 - JWT secret (use a long, random string)
 - Email settings for notifications (optional)
 - bKash payment configuration (optional)
 - Admin credentials
+
+Initialize the database:
+```bash
+npm run init-db
+```
 
 Start the backend server:
 ```bash
@@ -160,7 +170,7 @@ Start the frontend development server:
 npm start
 ```
 
-##  Security Features
+## 🔒 Security Features
 
 - **JWT Authentication** with secure secret keys
 - **bcrypt Password Hashing** with salt rounds
@@ -171,7 +181,7 @@ npm start
 - **File Upload Validation** with size and type restrictions
 - **Role-based Access Control** for admin functions
 
-##  Deployment
+## 🚀 Deployment
 
 ### Backend Deployment
 1. Set up MySQL database on your server
@@ -193,7 +203,7 @@ JWT_SECRET=your_very_secure_jwt_secret
 FRONTEND_URL=https://yourdomain.com
 ```
 
-##  Contributing
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -214,4 +224,4 @@ FRONTEND_URL=https://yourdomain.com
 - [ ] Content management with WYSIWYG editor
 - [ ] Multi-language support
 
-**Happy Coding! **
+**Happy Coding! 🚀**

@@ -20,10 +20,12 @@ class BlogController {
 
       const blogs = await Blog.findAll(parseInt(limit), parseInt(offset), category, search);
 
-      // Filter premium content for non-subscribers
+      // Filter premium content for non-subscribers and non-admins
       let filteredBlogs = blogs;
-      if (!req.user || req.user.subscription_status !== 'active' || 
-          (req.user.subscription_expiry && new Date(req.user.subscription_expiry) <= new Date())) {
+      if (!req.user || 
+          (req.user.role !== 'admin' && 
+           (req.user.subscription_status !== 'active' || 
+            (req.user.subscription_expiry && new Date(req.user.subscription_expiry) <= new Date())))) {
         filteredBlogs = blogs.map(blog => {
           if (blog.is_premium) {
             return {
@@ -68,9 +70,11 @@ class BlogController {
       }
 
       // Check if user can access premium content
-      const canAccessPremium = req.user && 
-                              req.user.subscription_status === 'active' && 
-                              new Date(req.user.subscription_expiry) > new Date();
+      const canAccessPremium = req.user && (
+        req.user.role === 'admin' || 
+        (req.user.subscription_status === 'active' && 
+         new Date(req.user.subscription_expiry) > new Date())
+      );
 
       if (blog.is_premium && !canAccessPremium) {
         return res.status(403).json({
