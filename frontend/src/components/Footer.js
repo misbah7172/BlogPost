@@ -8,14 +8,12 @@ import {
   Facebook, 
   Twitter, 
   Linkedin, 
-  Github,
-  Eye 
+  Github
 } from 'lucide-react';
-import useVisitorCount from '../hooks/useVisitorCount';
+import VisitorCounter from './VisitorCounter';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-  const { formattedCount, loading } = useVisitorCount();
 
   const quickLinks = [
     { name: 'Home', href: '/' },
@@ -169,16 +167,7 @@ const Footer = () => {
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 © {currentYear} Blog360. All rights reserved.
               </p>
-              <div className="flex items-center space-x-2 px-3 py-1 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 text-sm">
-                <Eye className="w-4 h-4 text-blue-500" />
-                <span className="text-gray-700 dark:text-gray-300">
-                  {loading ? (
-                    <span className="animate-pulse">Loading...</span>
-                  ) : (
-                    <>Visitors: <span className="font-semibold text-blue-600 dark:text-blue-400">{formattedCount}</span></>
-                  )}
-                </span>
-              </div>
+              <VisitorCounter />
             </div>
             <div className="flex items-center space-x-6">
               <Link

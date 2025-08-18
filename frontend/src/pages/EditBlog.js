@@ -54,7 +54,8 @@ const EditBlog = () => {
     const fetchCategories = async () => {
       try {
         const response = await blogService.getCategories();
-        setCategories(response.categories || []);
+        console.log('Categories response:', response); // Debug log
+        setCategories(response || []);
       } catch (error) {
         console.error('Error fetching categories:', error);
       }
