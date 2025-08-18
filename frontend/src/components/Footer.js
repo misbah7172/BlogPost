@@ -8,7 +8,8 @@ import {
   Facebook, 
   Twitter, 
   Linkedin, 
-  Github
+  Github,
+  User
 } from 'lucide-react';
 import VisitorCounter from './VisitorCounter';
 
@@ -20,13 +21,6 @@ const Footer = () => {
     { name: 'All Blogs', href: '/blogs' },
     { name: 'Subscribe', href: '/subscribe' },
     { name: 'Contact', href: '/contact' },
-  ];
-
-  const categories = [
-    { name: 'Programming', href: '/blogs?category=Programming' },
-    { name: 'Database', href: '/blogs?category=Database' },
-    { name: 'Backend', href: '/blogs?category=Backend' },
-    { name: 'Frontend', href: '/blogs?category=Frontend' },
   ];
 
   const socialLinks = [
@@ -61,13 +55,13 @@ const Footer = () => {
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-primary-500" />
                 <span className="text-gray-600 dark:text-gray-400">
-                  contact@blog360.com
+                  misbah244176@gmail.com
                 </span>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-primary-500" />
                 <span className="text-gray-600 dark:text-gray-400">
-                  +880 1XXX-XXXXXX
+                  +880 1824032222
                 </span>
               </div>
               <div className="flex items-center space-x-3">
@@ -97,66 +91,40 @@ const Footer = () => {
               ))}
             </ul>
           </div>
-
-          {/* Categories */}
-          <div>
-            <h3 className="text-lg font-semibold text-black dark:text-white mb-4 border-b-2 border-black dark:border-dark-border pb-2">
-              Categories
-            </h3>
-            <ul className="space-y-3">
-              {categories.map((category) => (
-                <li key={category.name}>
-                  <Link
-                    to={category.href}
-                    className="text-gray-600 hover:text-primary-500 dark:text-gray-400 dark:hover:text-primary-400 transition-colors duration-200"
-                  >
-                    {category.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* Social Links & Newsletter */}
-        <div className="border-t-2 border-gray-200 dark:border-dark-border pt-8 mt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            {/* Social Links */}
-            <div className="flex items-center space-x-4">
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Follow us:
-              </span>
-              {socialLinks.map((social) => {
-                const Icon = social.icon;
-                return (
-                  <a
-                    key={social.name}
-                    href={social.href}
-                    className="p-2 text-gray-600 hover:text-primary-500 dark:text-gray-400 dark:hover:text-primary-400 transition-colors duration-200"
-                    aria-label={social.name}
-                  >
-                    <Icon className="w-5 h-5" />
-                  </a>
-                );
-              })}
-            </div>
-
-            {/* Newsletter Signup */}
-            <div className="flex items-center space-x-3">
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Stay updated:
-              </span>
-              <div className="flex">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="brutal-input text-sm py-2 px-3 w-48"
-                />
-                <button className="brutal-button text-sm ml-2">
-                  Subscribe
-                </button>
               </div>
-            </div>
+                <div className="border-t-2 border-gray-200 dark:border-dark-border pt-8 mt-8">
+                <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                  <div className="flex items-center space-x-4">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Follow us:
+                  </span>
+                  {socialLinks.map((social) => {
+                    let Icon = social.icon;
+                    let href = social.href;
+                    if (social.name === 'Facebook') {
+                    href = 'https://www.facebook.com/misbah7172.misbah/';
+                    } else if (social.name === 'LinkedIn') {
+                    href = 'https://www.linkedin.com/in/md-habibulla-misba';
+                    } else if (social.name === 'GitHub') {
+                    href = 'https://github.com/misbah7172';
+                    } else if (social.name === 'Twitter') {
+                    href = 'https://misbah7172.github.io/My_Portfolio/';
+                    Icon = User; // Use portfolio-related icon instead of Twitter
+                    }
+                    return (
+                    <a
+                      key={social.name}
+                      href={href}
+                      className="p-2 text-gray-600 hover:text-primary-500 dark:text-gray-400 dark:hover:text-primary-400 transition-colors duration-200"
+                      aria-label={social.name}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Icon className="w-5 h-5" />
+                    </a>
+                    );
+                  })}
+                  </div>
           </div>
         </div>
 
@@ -165,7 +133,7 @@ const Footer = () => {
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                © {currentYear} Blog360. All rights reserved.
+                © {currentYear} Blog360. All rights reserved by  Misbah.
               </p>
               <VisitorCounter />
             </div>
