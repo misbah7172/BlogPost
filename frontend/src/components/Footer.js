@@ -8,8 +8,9 @@ import {
   Facebook, 
   Twitter, 
   Linkedin, 
-  Github 
+  Github
 } from 'lucide-react';
+import VisitorCounter from './VisitorCounter';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -60,13 +61,13 @@ const Footer = () => {
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-primary-500" />
                 <span className="text-gray-600 dark:text-gray-400">
-                  contact@blog360.com
+                  misbah244176@gmail.com
                 </span>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-primary-500" />
                 <span className="text-gray-600 dark:text-gray-400">
-                  +880 1XXX-XXXXXX
+                  +880 1824032222
                 </span>
               </div>
               <div className="flex items-center space-x-3">
@@ -161,10 +162,13 @@ const Footer = () => {
 
         {/* Copyright */}
         <div className="border-t-2 border-gray-200 dark:border-dark-border pt-6 mt-6">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              © {currentYear} Blog360. All rights reserved.
-            </p>
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                © {currentYear} Blog360. All rights reserved.
+              </p>
+              <VisitorCounter />
+            </div>
             <div className="flex items-center space-x-6">
               <Link
                 to="/privacy"
