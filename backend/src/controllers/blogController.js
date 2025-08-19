@@ -110,7 +110,7 @@ class BlogController {
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { title, category, categoryId, tags, content, excerpt, isPremium } = req.body;
+      const { title, category, categoryId, tags, content, excerpt, isPremium, mindmapData } = req.body;
       const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
       const blogId = await Blog.create({
@@ -122,7 +122,8 @@ class BlogController {
         excerpt,
         imageUrl,
         isPremium: isPremium === 'true' || isPremium === true,
-        authorId: req.user.id
+        authorId: req.user.id,
+        mindmapData: mindmapData ? (typeof mindmapData === 'string' ? JSON.parse(mindmapData) : mindmapData) : null
       });
 
       const blog = await Blog.findById(blogId);
@@ -144,7 +145,7 @@ class BlogController {
       }
 
       const { id } = req.params;
-      const { title, category, tags, content, excerpt, isPremium } = req.body;
+      const { title, category, tags, content, excerpt, isPremium, mindmapData } = req.body;
       
       // Check if blog exists
       const existingBlog = await Blog.findById(id);
@@ -161,7 +162,8 @@ class BlogController {
         content,
         excerpt,
         imageUrl,
-        isPremium: isPremium === 'true' || isPremium === true
+        isPremium: isPremium === 'true' || isPremium === true,
+        mindmapData: mindmapData ? (typeof mindmapData === 'string' ? JSON.parse(mindmapData) : mindmapData) : null
       });
 
       const blog = await Blog.findById(id);

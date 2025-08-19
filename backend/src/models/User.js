@@ -63,6 +63,13 @@ class User {
     `, [userId]);
     return result.rows;
   }
+
+  static async updateRole(userId, role) {
+    await pool.query(
+      'UPDATE users SET role = $1 WHERE id = $2',
+      [role, userId]
+    );
+  }
 }
 
 module.exports = User;

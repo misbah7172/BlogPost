@@ -402,18 +402,9 @@ const AdminDashboard = () => {
 
             {/* Recent Blogs */}
             <div className="brutal-card p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-black dark:text-white border-b-2 border-black dark:border-dark-border pb-2">
-                  Recent Blogs
-                </h3>
-                <button
-                  onClick={() => navigate('/create-blog')}
-                  className="brutal-button bg-green-500 hover:bg-green-600 text-white text-sm px-3 py-2 flex items-center"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Create Blog
-                </button>
-              </div>
+              <h3 className="text-lg font-semibold text-black dark:text-white mb-4 border-b-2 border-black dark:border-dark-border pb-2">
+                Recent Blogs
+              </h3>
               {blogs.slice(0, 5).map((blog) => (
                 <div key={blog.id} className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
                   <div>
@@ -623,13 +614,6 @@ const AdminDashboard = () => {
                 Blog Management
               </h3>
               <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => navigate('/create-blog')}
-                  className="brutal-button-primary flex items-center"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Blog
-                </button>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <input

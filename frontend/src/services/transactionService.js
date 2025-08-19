@@ -84,4 +84,9 @@ export const transactionService = {
   getAdminStats: async () => {
     return await apiRequest('/admin/dashboard/stats');
   },
+
+  // Get stats (alias for getAdminStats)
+  getStats: async () => {
+    return await apiRequest('/admin/dashboard/stats');
+  },
 };

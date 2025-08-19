@@ -2,11 +2,11 @@ const { pool } = require('../config/database');
 
 class Blog {
   static async create(blogData) {
-    const { title, category, categoryId, tags, content, excerpt, imageUrl, isPremium, authorId } = blogData;
+    const { title, category, categoryId, tags, content, excerpt, imageUrl, isPremium, authorId, mindmapData } = blogData;
     
     const result = await pool.query(
-      'INSERT INTO blogs (title, category, category_id, tags, content, excerpt, image_url, is_premium, author_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id',
-      [title, category, categoryId, tags, content, excerpt, imageUrl, isPremium, authorId]
+      'INSERT INTO blogs (title, category, category_id, tags, content, excerpt, image_url, is_premium, author_id, mindmap_data) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id',
+      [title, category, categoryId, tags, content, excerpt, imageUrl, isPremium, authorId, mindmapData ? JSON.stringify(mindmapData) : null]
     );
     
     return result.rows[0].id;
@@ -58,11 +58,11 @@ class Blog {
   }
 
   static async update(id, blogData) {
-    const { title, category, tags, content, excerpt, imageUrl, isPremium } = blogData;
+    const { title, category, tags, content, excerpt, imageUrl, isPremium, mindmapData } = blogData;
     
     await pool.query(
-      'UPDATE blogs SET title = $1, category = $2, tags = $3, content = $4, excerpt = $5, image_url = $6, is_premium = $7 WHERE id = $8',
-      [title, category, tags, content, excerpt, imageUrl, isPremium, id]
+      'UPDATE blogs SET title = $1, category = $2, tags = $3, content = $4, excerpt = $5, image_url = $6, is_premium = $7, mindmap_data = $8 WHERE id = $9',
+      [title, category, tags, content, excerpt, imageUrl, isPremium, mindmapData ? JSON.stringify(mindmapData) : null, id]
     );
   }
 

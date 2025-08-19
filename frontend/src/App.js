@@ -19,6 +19,8 @@ import Privacy from './pages/Privacy';
 import AdminPanel from './pages/admin/AdminPanel';
 import CreateBlog from './pages/CreateBlog';
 import EditBlog from './pages/EditBlog';
+import MindmapEditor from './pages/MindmapEditor';
+import MindmapViewer from './pages/MindmapViewer';
 
 // Protected route component
 const ProtectedRoute = ({ children, requireAdmin = false }) => {
@@ -60,6 +62,9 @@ function App() {
                 <Route path="/subscribe" element={<Subscribe />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/privacy" element={<Privacy />} />
+                
+                {/* Public mindmap viewer */}
+                <Route path="/mindmap/view/:id" element={<MindmapViewer />} />
 
                 {/* Protected routes */}
                 <Route 
@@ -101,6 +106,32 @@ function App() {
                   element={
                     <ProtectedRoute requireAdmin={true}>
                       <AdminPanel />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* Mindmap routes - Admin only for editing */}
+                <Route 
+                  path="/mindmap/create/:blogId" 
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <MindmapEditor />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/mindmap/edit/:id" 
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <MindmapEditor />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/mindmap/:id" 
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <MindmapEditor />
                     </ProtectedRoute>
                   } 
                 />

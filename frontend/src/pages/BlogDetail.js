@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { blogService } from '../services/blogService';
-import { Clock, User, Tag, Heart, MessageCircle, BookmarkPlus, Bookmark, ArrowLeft, Lock, Share2 } from 'lucide-react';
+import InteractiveMindmap from '../components/InteractiveMindmap';
+import { Clock, User, Tag, Heart, MessageCircle, BookmarkPlus, Bookmark, ArrowLeft, Lock, Share2, Map } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -312,6 +313,60 @@ const BlogDetail = () => {
             </div>
           )}
         </div>
+
+        {/* Mindmap Section */}
+        {blog?.mindmap_data && (
+          <div className="brutal-card p-8 mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-black dark:text-white border-b-2 border-black dark:border-dark-border pb-2">
+                <Map className="inline-block mr-2" size={24} />
+                Interactive Mindmap
+              </h3>
+            </div>
+            
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                <strong>Visual representation of this blog's key concepts</strong>
+              </p>
+            </div>
+
+            {/* Render the actual InteractiveMindmap component */}
+            <div className="mindmap-container bg-white dark:bg-gray-900 rounded-lg border-2 border-black dark:border-dark-border">
+              <InteractiveMindmap
+                mindmapData={blog.mindmap_data}
+                readOnly={true}
+              />
+            </div>
+            
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                Explore the visual representation of this blog post's key concepts
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Admin Create/Edit Mindmap Section - Only show if no mindmap exists */}
+        {!blog?.mindmap_data && user?.role === 'admin' && (
+          <div className="brutal-card p-8 mb-8">
+            <div className="text-center">
+              <Map className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-medium text-black dark:text-white mb-2">
+                No Mindmap Available
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 mb-6">
+                Create an interactive mindmap to visualize the key concepts of this blog post.
+              </p>
+              <Link
+                to={`/admin/blogs/edit/${id}`}
+                className="brutal-button bg-green-500 hover:bg-green-600 text-white"
+              >
+                <Map className="mr-2" size={16} />
+                Add Mindmap to This Blog
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Comments Section */}
         <div className="brutal-card p-8">

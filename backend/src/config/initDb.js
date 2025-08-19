@@ -29,10 +29,12 @@ const createDatabase = async () => {
     await pool.query('DROP TABLE IF EXISTS comments CASCADE');
     await pool.query('DROP TABLE IF EXISTS likes CASCADE');
     await pool.query('DROP TABLE IF EXISTS saved_posts CASCADE');
+    await pool.query('DROP TABLE IF EXISTS mindmaps CASCADE');
     await pool.query('DROP TABLE IF EXISTS blogs CASCADE');
     await pool.query('DROP TABLE IF EXISTS transactions CASCADE');
     await pool.query('DROP TABLE IF EXISTS categories CASCADE');
     await pool.query('DROP TABLE IF EXISTS users CASCADE');
+    await pool.query('DROP TABLE IF EXISTS visitors CASCADE');
 
     // Create users table
     await pool.query(`
@@ -82,7 +84,8 @@ const createDatabase = async () => {
         publish_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        author_id INT DEFAULT 1 REFERENCES users(id) ON DELETE SET NULL
+        author_id INT DEFAULT 1 REFERENCES users(id) ON DELETE SET NULL,
+        mindmap_data JSONB
       )
     `);
     console.log('✅ Blogs table created');
@@ -139,6 +142,26 @@ const createDatabase = async () => {
       )
     `);
     console.log('✅ Saved posts table created');
+
+    // Create visitors table
+    await pool.query(`
+      CREATE TABLE visitors (
+        id SERIAL PRIMARY KEY,
+        visitor_id VARCHAR(32) UNIQUE NOT NULL,
+        ip_address VARCHAR(45) NOT NULL,
+        user_agent TEXT,
+        referrer VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    // Create indexes for visitors table
+    await pool.query(`CREATE INDEX idx_visitors_visitor_id ON visitors(visitor_id)`);
+    await pool.query(`CREATE INDEX idx_visitors_ip_address ON visitors(ip_address)`);
+    await pool.query(`CREATE INDEX idx_visitors_created_at ON visitors(created_at)`);
+    
+    console.log('✅ Visitors table created');
 
     // Insert default admin user
     const bcrypt = require('bcryptjs');

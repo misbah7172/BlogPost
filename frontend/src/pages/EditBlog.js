@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { blogService } from '../services/blogService';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Eye } from 'lucide-react';
+import { ArrowLeft, Eye, Brain } from 'lucide-react';
+import InteractiveMindmap from '../components/InteractiveMindmap';
 
 const EditBlog = () => {
   const navigate = useNavigate();
@@ -22,6 +23,8 @@ const EditBlog = () => {
     isPremium: false,
     isPublished: true
   });
+  const [mindmapData, setMindmapData] = useState(null);
+  const [showMindmapEditor, setShowMindmapEditor] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated || user?.role !== 'admin') {
@@ -42,6 +45,12 @@ const EditBlog = () => {
           isPremium: Boolean(blog.is_premium),
           isPublished: Boolean(blog.is_published)
         });
+        
+        // Load mindmap data if it exists
+        if (blog.mindmap_data) {
+          setMindmapData(blog.mindmap_data);
+          setShowMindmapEditor(true);
+        }
       } catch (error) {
         toast.error('Failed to load blog data');
         console.error('Error fetching blog:', error);
@@ -87,7 +96,12 @@ const EditBlog = () => {
 
     setLoading(true);
     try {
-      await blogService.updateBlog(id, formData);
+      const updateData = {
+        ...formData,
+        mindmapData: mindmapData
+      };
+      
+      await blogService.updateBlog(id, updateData);
       toast.success('Blog updated successfully!');
       navigate('/admin');
     } catch (error) {
@@ -289,6 +303,45 @@ const EditBlog = () => {
                   required
                 />
               </div>
+            </div>
+
+            {/* Mindmap Section */}
+            <div className="border-2 border-purple-300 dark:border-purple-600 p-4 rounded">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-purple-800 dark:text-purple-300 flex items-center">
+                  <Brain className="h-5 w-5 mr-2" />
+                  Interactive Mindmap (Optional)
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowMindmapEditor(!showMindmapEditor)}
+                  className="px-4 py-2 border-2 border-purple-600 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 hover:bg-purple-200 dark:hover:bg-purple-800"
+                >
+                  {showMindmapEditor ? 'Hide Mindmap Editor' : (mindmapData ? 'Edit Mindmap' : 'Create Mindmap')}
+                </button>
+              </div>
+              
+              {showMindmapEditor && (
+                <div className="border border-gray-300 dark:border-gray-600 rounded p-2">
+                  <InteractiveMindmap
+                    mindmapData={mindmapData}
+                    onMindmapChange={setMindmapData}
+                    readOnly={false}
+                  />
+                </div>
+              )}
+              
+              {mindmapData && !showMindmapEditor && (
+                <div className="bg-purple-50 dark:bg-purple-900 p-3 rounded">
+                  <p className="text-sm text-purple-700 dark:text-purple-300">
+                    ✓ Mindmap is configured for this blog post. Click "Edit Mindmap" to modify it.
+                  </p>
+                </div>
+              )}
+              
+              <p className="text-sm text-purple-600 dark:text-purple-400 mt-2">
+                {mindmapData ? 'Modify the interactive mindmap for this blog post.' : 'Create an interactive mindmap to help readers visualize and understand your blog content better.'}
+              </p>
             </div>
 
             {/* Action Buttons */}

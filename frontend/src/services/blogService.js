@@ -55,12 +55,18 @@ export const blogService = {
       tags: blogData.tags,
       content: blogData.content,
       excerpt: blogData.excerpt,
-      isPremium: blogData.isPremium
+      isPremium: blogData.isPremium,
+      mindmapData: blogData.mindmapData
     };
     
     Object.keys(mappedData).forEach(key => {
       if (mappedData[key] !== null && mappedData[key] !== undefined) {
-        formData.append(key, mappedData[key]);
+        // Special handling for mindmapData - stringify if it's an object
+        if (key === 'mindmapData' && typeof mappedData[key] === 'object') {
+          formData.append(key, JSON.stringify(mappedData[key]));
+        } else {
+          formData.append(key, mappedData[key]);
+        }
       }
     });
 
@@ -80,12 +86,18 @@ export const blogService = {
       tags: blogData.tags,
       content: blogData.content,
       excerpt: blogData.excerpt,
-      isPremium: blogData.isPremium
+      isPremium: blogData.isPremium,
+      mindmapData: blogData.mindmapData
     };
     
     Object.keys(mappedData).forEach(key => {
       if (mappedData[key] !== null && mappedData[key] !== undefined) {
-        formData.append(key, mappedData[key]);
+        // Special handling for mindmapData - stringify if it's an object
+        if (key === 'mindmapData' && typeof mappedData[key] === 'object') {
+          formData.append(key, JSON.stringify(mappedData[key]));
+        } else {
+          formData.append(key, mappedData[key]);
+        }
       }
     });
 
