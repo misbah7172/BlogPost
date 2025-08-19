@@ -453,6 +453,59 @@ const InteractiveMindmap = ({
         </div>
       )}
 
+      {/* Read-only Toolbar - Only zoom and navigation controls */}
+      {readOnly && (
+        <div className="bg-gray-50 border-b px-4 py-3 flex flex-wrap gap-2 items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600 font-medium">Interactive Mindmap</span>
+          </div>
+          
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setScale(Math.min(3, scale * 1.1))}
+              className="flex items-center gap-1 px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm"
+              title="Zoom In"
+            >
+              <Plus size={16} />
+            </button>
+            
+            <span className="px-3 py-2 bg-gray-100 rounded-md text-sm font-mono">
+              {Math.round(scale * 100)}%
+            </span>
+            
+            <button
+              type="button"
+              onClick={() => setScale(Math.max(0.1, scale * 0.9))}
+              className="flex items-center gap-1 px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm"
+              title="Zoom Out"
+            >
+              <Minus size={16} />
+            </button>
+
+            <button
+              type="button"
+              onClick={resetView}
+              className="flex items-center gap-2 px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors text-sm"
+              title="Reset View"
+            >
+              <RotateCcw size={16} />
+              Reset
+            </button>
+
+            <button
+              type="button"
+              onClick={exportMindmap}
+              className="flex items-center gap-2 px-3 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors text-sm"
+              title="Export Mindmap"
+            >
+              <Download size={16} />
+              Export
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Edit Modal */}
       {isEditing && (
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
