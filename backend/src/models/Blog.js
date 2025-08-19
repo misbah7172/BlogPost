@@ -12,7 +12,7 @@ class Blog {
     return result.rows[0].id;
   }
 
-  static async findAll(limit = 50, offset = 0, category = null, search = null) {
+  static async findAll(limit = 50, offset = 0, category = null, search = null, includeUnpublished = false) {
     let query = `
       SELECT b.*, u.name as author_name, c.name as category_name, c.color as category_color, c.icon as category_icon,
         (SELECT COUNT(*) FROM likes WHERE blog_id = b.id) as likes_count,
@@ -20,21 +20,31 @@ class Blog {
       FROM blogs b
       LEFT JOIN users u ON b.author_id = u.id
       LEFT JOIN categories c ON b.category_id = c.id
-      WHERE b.is_published = TRUE
     `;
+    
+    const conditions = [];
     const params = [];
     let paramIndex = 1;
 
+    // Only filter by published status if not including unpublished blogs (admin view)
+    if (!includeUnpublished) {
+      conditions.push('b.is_published = TRUE');
+    }
+
     if (category) {
-      query += ` AND (b.category = $${paramIndex} OR c.slug = $${paramIndex + 1})`;
+      conditions.push(`(b.category = $${paramIndex} OR c.slug = $${paramIndex + 1})`);
       params.push(category, category);
       paramIndex += 2;
     }
 
     if (search) {
-      query += ` AND (b.title ILIKE $${paramIndex} OR b.content ILIKE $${paramIndex + 1} OR b.tags ILIKE $${paramIndex + 2})`;
+      conditions.push(`(b.title ILIKE $${paramIndex} OR b.content ILIKE $${paramIndex + 1} OR b.tags ILIKE $${paramIndex + 2})`);
       params.push(`%${search}%`, `%${search}%`, `%${search}%`);
       paramIndex += 3;
+    }
+
+    if (conditions.length > 0) {
+      query += ` WHERE ${conditions.join(' AND ')}`;
     }
 
     query += ` ORDER BY b.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
@@ -63,6 +73,13 @@ class Blog {
     await pool.query(
       'UPDATE blogs SET title = $1, category = $2, tags = $3, content = $4, excerpt = $5, image_url = $6, is_premium = $7, mindmap_data = $8 WHERE id = $9',
       [title, category, tags, content, excerpt, imageUrl, isPremium, mindmapData ? JSON.stringify(mindmapData) : null, id]
+    );
+  }
+
+  static async updateStatus(id, isPublished) {
+    await pool.query(
+      'UPDATE blogs SET is_published = $1 WHERE id = $2',
+      [isPublished, id]
     );
   }
 

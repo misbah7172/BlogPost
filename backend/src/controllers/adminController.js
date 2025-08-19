@@ -49,26 +49,38 @@ class AdminController {
 
       paramCount++;
       query += ` ORDER BY created_at DESC LIMIT $${paramCount}`;
-      params.push(parseInt(limit));
-      
+      params.push(limit);
+
       paramCount++;
       query += ` OFFSET $${paramCount}`;
-      params.push(parseInt(offset));
+      params.push(offset);
 
       const { pool } = require('../config/database');
       const result = await pool.query(query, params);
-      const users = result.rows;
+
+      // Get total count for pagination
+      let countQuery = 'SELECT COUNT(*) FROM users';
+      const countParams = [];
+      if (subscription_status) {
+        countQuery += ' WHERE subscription_status = $1';
+        countParams.push(subscription_status);
+      }
+
+      const countResult = await pool.query(countQuery, countParams);
+      const totalCount = parseInt(countResult.rows[0].count);
 
       res.json({
-        users,
+        users: result.rows,
         pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
-          hasMore: users.length === parseInt(limit)
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(totalCount / limit),
+          totalUsers: totalCount,
+          hasNextPage: page * limit < totalCount,
+          hasPrevPage: page > 1
         }
       });
     } catch (error) {
-      console.error('Get users error:', error);
+      console.error('Get all users error:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
   }
@@ -76,19 +88,17 @@ class AdminController {
   static async updateUserSubscription(req, res) {
     try {
       const { userId } = req.params;
-      const { subscription_status, subscription_expiry } = req.body;
+      const { subscriptionStatus, subscriptionExpiry } = req.body;
 
-      // Validate input
-      const validStatuses = ['free', 'active', 'expired'];
-      if (!validStatuses.includes(subscription_status)) {
+      if (!['free', 'active', 'expired'].includes(subscriptionStatus)) {
         return res.status(400).json({ message: 'Invalid subscription status' });
       }
 
-      if (subscription_status === 'active' && !subscription_expiry) {
-        return res.status(400).json({ message: 'Expiry date required for active subscription' });
-      }
-
-      await User.updateSubscription(userId, subscription_status, subscription_expiry);
+      const { pool } = require('../config/database');
+      await pool.query(
+        'UPDATE users SET subscription_status = $1, subscription_expiry = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3',
+        [subscriptionStatus, subscriptionExpiry, userId]
+      );
 
       res.json({ message: 'User subscription updated successfully' });
     } catch (error) {
@@ -100,43 +110,40 @@ class AdminController {
   static async getRecentActivity(req, res) {
     try {
       const { pool } = require('../config/database');
+      
+      // Get recent blogs, comments, and transactions
+      const [blogs, comments, transactions] = await Promise.all([
+        pool.query(`
+          SELECT b.id, b.title, b.created_at, u.name as author_name, 'blog' as type
+          FROM blogs b 
+          JOIN users u ON b.author_id = u.id 
+          ORDER BY b.created_at DESC 
+          LIMIT 5
+        `),
+        pool.query(`
+          SELECT c.id, c.content, c.created_at, u.name as user_name, b.title as blog_title, 'comment' as type
+          FROM comments c 
+          JOIN users u ON c.user_id = u.id 
+          JOIN blogs b ON c.blog_id = b.id 
+          ORDER BY c.created_at DESC 
+          LIMIT 5
+        `),
+        pool.query(`
+          SELECT t.id, t.trx_id, t.amount, t.status, t.created_at, u.name as user_name, 'transaction' as type
+          FROM transactions t 
+          JOIN users u ON t.user_id = u.id 
+          ORDER BY t.created_at DESC 
+          LIMIT 5
+        `)
+      ]);
 
-      // Get recent transactions
-      const recentTransactionsResult = await pool.query(`
-        SELECT t.*, u.name as user_name, u.email as user_email
-        FROM transactions t
-        JOIN users u ON t.user_id = u.id
-        ORDER BY t.created_at DESC
-        LIMIT 10
-      `);
-      const recentTransactions = recentTransactionsResult.rows;
+      const activity = [
+        ...blogs.rows,
+        ...comments.rows,
+        ...transactions.rows
+      ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 10);
 
-      // Get recent comments
-      const recentCommentsResult = await pool.query(`
-        SELECT c.*, u.name as user_name, b.title as blog_title
-        FROM comments c
-        JOIN users u ON c.user_id = u.id
-        JOIN blogs b ON c.blog_id = b.id
-        ORDER BY c.created_at DESC
-        LIMIT 10
-      `);
-      const recentComments = recentCommentsResult.rows;
-
-      // Get recent blog views (if you implement view tracking)
-      const recentBlogsResult = await pool.query(`
-        SELECT b.*, u.name as author_name
-        FROM blogs b
-        JOIN users u ON b.author_id = u.id
-        ORDER BY b.created_at DESC
-        LIMIT 10
-      `);
-      const recentBlogs = recentBlogsResult.rows;
-
-      res.json({
-        recentTransactions,
-        recentComments,
-        recentBlogs
-      });
+      res.json({ activity });
     } catch (error) {
       console.error('Get recent activity error:', error);
       res.status(500).json({ message: 'Internal server error' });
@@ -145,38 +152,41 @@ class AdminController {
 
   static async getRevenueAnalytics(req, res) {
     try {
-      const { pool } = require('../config/database');
       const { period = 'monthly' } = req.query;
+      const { pool } = require('../config/database');
 
-      let dateFormat;
+      let dateFormat, dateInterval;
       switch (period) {
         case 'daily':
           dateFormat = 'YYYY-MM-DD';
+          dateInterval = '1 day';
           break;
         case 'weekly':
-          dateFormat = 'YYYY-WW';
+          dateFormat = 'YYYY-"W"WW';
+          dateInterval = '1 week';
           break;
         case 'yearly':
           dateFormat = 'YYYY';
+          dateInterval = '1 year';
           break;
-        default:
+        default: // monthly
           dateFormat = 'YYYY-MM';
+          dateInterval = '1 month';
       }
 
       const result = await pool.query(`
         SELECT 
           TO_CHAR(approved_at, $1) as period,
-          COUNT(*) as transaction_count,
-          SUM(amount) as total_revenue,
-          plan_type
+          SUM(amount) as revenue,
+          COUNT(*) as transaction_count
         FROM transactions 
-        WHERE status = 'approved' AND approved_at IS NOT NULL
-        GROUP BY period, plan_type
-        ORDER BY period DESC
-        LIMIT 12
+        WHERE status = 'approved' 
+          AND approved_at >= CURRENT_DATE - INTERVAL '6 ${dateInterval}'
+        GROUP BY TO_CHAR(approved_at, $1)
+        ORDER BY period
       `, [dateFormat]);
-      const revenueData = result.rows;
 
+      const revenueData = result.rows;
       res.json({ revenueData, period });
     } catch (error) {
       console.error('Get revenue analytics error:', error);
@@ -209,6 +219,97 @@ class AdminController {
     }
   }
 
+  static async addTransactionId(req, res) {
+    try {
+      const { trxId } = req.body;
+
+      if (!trxId || trxId.trim().length < 8) {
+        return res.status(400).json({ message: 'Transaction ID must be at least 8 characters' });
+      }
+
+      const trimmedTrxId = trxId.trim();
+
+      // Check if transaction ID already exists (this ensures uniqueness)
+      const existingTransaction = await Transaction.findByTrxId(trimmedTrxId);
+      if (existingTransaction) {
+        return res.status(409).json({ 
+          message: 'Transaction ID already exists. Each transaction ID must be unique.',
+          existing: {
+            id: existingTransaction.id,
+            status: existingTransaction.status,
+            createdAt: existingTransaction.created_at
+          }
+        });
+      }
+
+      // Create a new "approved" transaction with this ID
+      const transactionId = await Transaction.createApprovedTransaction({
+        trxId: trimmedTrxId
+      });
+
+      res.status(201).json({
+        message: 'Transaction ID added successfully',
+        transactionId,
+        trxId: trimmedTrxId,
+        status: 'approved'
+      });
+    } catch (error) {
+      console.error('Add transaction ID error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  // Blog management functions
+  static async getAllBlogs(req, res) {
+    try {
+      const { page = 1, limit = 20 } = req.query;
+      const offset = (page - 1) * limit;
+      const blogs = await Blog.findAll(limit, offset, null, null, true); // Include unpublished blogs for admin
+      res.json({ blogs });
+    } catch (error) {
+      console.error('Get all blogs error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  static async getBlogById(req, res) {
+    try {
+      const { id } = req.params;
+      const blog = await Blog.findById(id);
+      if (!blog) {
+        return res.status(404).json({ message: 'Blog not found' });
+      }
+      res.json({ blog });
+    } catch (error) {
+      console.error('Get blog by ID error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  static async updateBlogStatus(req, res) {
+    try {
+      const { id } = req.params;
+      const { is_published } = req.body;
+      
+      await Blog.updateStatus(id, is_published);
+      res.json({ message: 'Blog status updated successfully' });
+    } catch (error) {
+      console.error('Update blog status error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
+  static async deleteBlog(req, res) {
+    try {
+      const { id } = req.params;
+      await Blog.delete(id);
+      res.json({ message: 'Blog deleted successfully' });
+    } catch (error) {
+      console.error('Delete blog error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
   static async exportData(req, res) {
     try {
       const { type, format = 'json' } = req.query;
@@ -219,32 +320,31 @@ class AdminController {
 
       switch (type) {
         case 'users':
-          const usersResult = await pool.query(`
-            SELECT id, name, email, subscription_status, subscription_expiry, created_at
-            FROM users
-          `);
-          data = usersResult.rows;
-          filename = 'users_export';
+          const users = await pool.query('SELECT id, name, email, subscription_status, subscription_expiry, created_at FROM users ORDER BY created_at DESC');
+          data = users.rows;
+          filename = `users_export_${new Date().toISOString().split('T')[0]}`;
           break;
 
         case 'transactions':
-          const transactionsResult = await pool.query(`
-            SELECT t.*, u.name as user_name, u.email as user_email
-            FROM transactions t
-            JOIN users u ON t.user_id = u.id
+          const transactions = await pool.query(`
+            SELECT t.*, u.name as user_name, u.email as user_email 
+            FROM transactions t 
+            JOIN users u ON t.user_id = u.id 
+            ORDER BY t.created_at DESC
           `);
-          data = transactionsResult.rows;
-          filename = 'transactions_export';
+          data = transactions.rows;
+          filename = `transactions_export_${new Date().toISOString().split('T')[0]}`;
           break;
 
         case 'blogs':
-          const blogsResult = await pool.query(`
-            SELECT b.*, u.name as author_name
-            FROM blogs b
-            JOIN users u ON b.author_id = u.id
+          const blogs = await pool.query(`
+            SELECT b.*, u.name as author_name 
+            FROM blogs b 
+            JOIN users u ON b.author_id = u.id 
+            ORDER BY b.created_at DESC
           `);
-          data = blogsResult.rows;
-          filename = 'blogs_export';
+          data = blogs.rows;
+          filename = `blogs_export_${new Date().toISOString().split('T')[0]}`;
           break;
 
         default:
@@ -252,11 +352,10 @@ class AdminController {
       }
 
       if (format === 'csv') {
-        // For CSV export, you'd need to implement CSV conversion
+        const csv = this.convertToCSV(data);
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}.csv"`);
-        // Implement CSV conversion here
-        res.json({ message: 'CSV export not implemented yet' });
+        res.send(csv);
       } else {
         res.setHeader('Content-Type', 'application/json');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}.json"`);
@@ -268,172 +367,22 @@ class AdminController {
     }
   }
 
-  // Blog management methods
-  static async getAllBlogs(req, res) {
-    try {
-      const { page = 1, limit = 50, category, search, status } = req.query;
-      const offset = (page - 1) * limit;
-
-      let query = `
-        SELECT b.*, u.name as author_name, c.name as category_name, c.color as category_color,
-          (SELECT COUNT(*) FROM likes WHERE blog_id = b.id) as likes_count,
-          (SELECT COUNT(*) FROM comments WHERE blog_id = b.id) as comments_count,
-          (SELECT COUNT(*) FROM saved_posts WHERE blog_id = b.id) as saves_count
-        FROM blogs b
-        LEFT JOIN users u ON b.author_id = u.id
-        LEFT JOIN categories c ON b.category_id = c.id
-        WHERE 1=1
-      `;
-      const params = [];
-      let paramCount = 0;
-
-      if (category) {
-        paramCount++;
-        query += ` AND (b.category = $${paramCount}`;
-        params.push(category);
-        paramCount++;
-        query += ` OR c.slug = $${paramCount})`;
-        params.push(category);
-      }
-
-      if (search) {
-        const searchTerm = `%${search}%`;
-        paramCount++;
-        query += ` AND (b.title ILIKE $${paramCount}`;
-        params.push(searchTerm);
-        paramCount++;
-        query += ` OR b.content ILIKE $${paramCount}`;
-        params.push(searchTerm);
-        paramCount++;
-        query += ` OR b.tags ILIKE $${paramCount})`;
-        params.push(searchTerm);
-      }
-
-      if (status === 'published') {
-        query += ' AND b.is_published = TRUE';
-      } else if (status === 'draft') {
-        query += ' AND b.is_published = FALSE';
-      } else if (status === 'premium') {
-        query += ' AND b.is_premium = TRUE';
-      }
-
-      paramCount++;
-      query += ` ORDER BY b.created_at DESC LIMIT $${paramCount}`;
-      params.push(parseInt(limit));
-      
-      paramCount++;
-      query += ` OFFSET $${paramCount}`;
-      params.push(parseInt(offset));
-
-      const { pool } = require('../config/database');
-      const result = await pool.query(query, params);
-      const blogs = result.rows;
-
-      // Get total count for pagination
-      let countQuery = `
-        SELECT COUNT(*) as total
-        FROM blogs b
-        LEFT JOIN categories c ON b.category_id = c.id
-        WHERE 1=1
-      `;
-      const countParams = [];
-      let countParamCount = 0;
-
-      if (category) {
-        countParamCount++;
-        countQuery += ` AND (b.category = $${countParamCount}`;
-        countParams.push(category);
-        countParamCount++;
-        countQuery += ` OR c.slug = $${countParamCount})`;
-        countParams.push(category);
-      }
-
-      if (search) {
-        const searchTerm = `%${search}%`;
-        countParamCount++;
-        countQuery += ` AND (b.title ILIKE $${countParamCount}`;
-        countParams.push(searchTerm);
-        countParamCount++;
-        countQuery += ` OR b.content ILIKE $${countParamCount}`;
-        countParams.push(searchTerm);
-        countParamCount++;
-        countQuery += ` OR b.tags ILIKE $${countParamCount})`;
-        countParams.push(searchTerm);
-      }
-
-      if (status === 'published') {
-        countQuery += ' AND b.is_published = TRUE';
-      } else if (status === 'draft') {
-        countQuery += ' AND b.is_published = FALSE';
-      } else if (status === 'premium') {
-        countQuery += ' AND b.is_premium = TRUE';
-      }
-
-      const countResult = await pool.query(countQuery, countParams);
-      const total = countResult.rows[0].total;
-
-      res.json({
-        blogs,
-        pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
-          total: parseInt(total),
-          totalPages: Math.ceil(total / limit),
-          hasMore: (page * limit) < total
-        }
-      });
-    } catch (error) {
-      console.error('Get all blogs error:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  }
-
-  static async getBlogById(req, res) {
-    try {
-      const { id } = req.params;
-      const blog = await Blog.findById(id);
-      
-      if (!blog) {
-        return res.status(404).json({ message: 'Blog not found' });
-      }
-      
-      res.json({ blog });
-    } catch (error) {
-      console.error('Get blog by ID error:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  }
-
-  static async updateBlogStatus(req, res) {
-    try {
-      const { id } = req.params;
-      const { is_published, is_premium } = req.body;
-
-      const { pool } = require('../config/database');
-      await pool.query(
-        'UPDATE blogs SET is_published = $1, is_premium = $2 WHERE id = $3',
-        [is_published, is_premium, id]
-      );
-
-      res.json({ message: 'Blog status updated successfully' });
-    } catch (error) {
-      console.error('Update blog status error:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  }
-
-  static async deleteBlog(req, res) {
-    try {
-      const { id } = req.params;
-
-      const { pool } = require('../config/database');
-      await pool.query('DELETE FROM blogs WHERE id = $1', [id]);
-
-      res.json({ message: 'Blog deleted successfully' });
-    } catch (error) {
-      console.error('Delete blog error:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
+  static convertToCSV(data) {
+    if (!data.length) return '';
+    
+    const headers = Object.keys(data[0]);
+    const csvHeaders = headers.join(',');
+    const csvRows = data.map(row => 
+      headers.map(header => {
+        const value = row[header];
+        // Escape quotes and wrap in quotes if contains comma or quote
+        return typeof value === 'string' && (value.includes(',') || value.includes('"')) 
+          ? `"${value.replace(/"/g, '""')}"` 
+          : value;
+      }).join(',')
+    );
+    
+    return [csvHeaders, ...csvRows].join('\n');
   }
 }
 

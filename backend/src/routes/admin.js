@@ -24,6 +24,7 @@ router.delete('/blogs/:id', AdminController.deleteBlog);
 
 // Transaction management
 router.post('/transactions/bulk-approve', AdminController.bulkApproveTransactions);
+router.post('/transactions/add-id', AdminController.addTransactionId);
 
 // Data export
 router.get('/export', AdminController.exportData);

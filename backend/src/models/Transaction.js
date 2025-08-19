@@ -12,6 +12,20 @@ class Transaction {
     return result.rows[0].id;
   }
 
+  static async createApprovedTransaction(transactionData) {
+    const { trxId } = transactionData;
+    
+    // Use user_id = 1 (admin user) for admin-created transaction IDs
+    // These will be available for users to claim later
+    // Using 'approved' status and 'lifetime' plan as placeholders
+    const result = await pool.query(
+      'INSERT INTO transactions (user_id, trx_id, amount, plan_type, status, approved_at) VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP) RETURNING id',
+      [1, trxId, 0, 'lifetime', 'approved']
+    );
+    
+    return result.rows[0].id;
+  }
+
   static async findByTrxId(trxId) {
     const result = await pool.query(
       'SELECT * FROM transactions WHERE trx_id = $1',
