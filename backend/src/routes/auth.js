@@ -2,10 +2,12 @@ const express = require('express');
 const router = express.Router();
 const AuthController = require('../controllers/authController');
 const { authenticateToken } = require('../middleware/auth');
+const { uploadProfileImage, handleMulterError } = require('../middleware/upload');
 
 // Public routes
-router.post('/register', AuthController.validateRegister, AuthController.register);
+router.post('/register', uploadProfileImage, handleMulterError, AuthController.validateRegister, AuthController.register);
 router.post('/login', AuthController.validateLogin, AuthController.login);
+router.post('/firebase-register', AuthController.registerFirebaseUser);
 
 // Protected routes
 router.get('/profile', authenticateToken, AuthController.getProfile);
