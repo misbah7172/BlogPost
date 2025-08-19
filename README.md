@@ -1,8 +1,8 @@
 # Blog Subscription Website with bKash Payment Integration
 
-A full-stack React + Node.js + MySQL blog website with subscription system and bKash QR payment integration.
+A full-stack React + Node.js + PostgreSQL blog website with subscription system and bKash QR payment integration.
 
-## 🚀 Features
+##  Features
 
 ### Core Functionality
 - **Free & Premium Blogs**: Access control based on subscription status
@@ -14,11 +14,11 @@ A full-stack React + Node.js + MySQL blog website with subscription system and b
 - **Search & Filter**: Search blogs by title/content and filter by category
 - **Responsive Design**: Mobile-first design with dark/light mode
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Backend
 - **Node.js** with Express.js
-- **MySQL** database
+- **PostgreSQL** database
 - **JWT** authentication
 - **bcrypt** password hashing
 - **Multer** file uploads
@@ -36,81 +36,11 @@ A full-stack React + Node.js + MySQL blog website with subscription system and b
 - **React Hot Toast** notifications
 - **Date-fns** date formatting
 
-## 📁 Project Structure
-
-```
-Blog_Post/
-├── backend/
-│   ├── src/
-│   │   ├── config/
-│   │   │   ├── database.js
-│   │   │   └── initDb.js
-│   │   ├── controllers/
-│   │   │   ├── authController.js
-│   │   │   ├── blogController.js
-│   │   │   ├── commentController.js
-│   │   │   ├── transactionController.js
-│   │   │   └── adminController.js
-│   │   ├── middleware/
-│   │   │   ├── auth.js
-│   │   │   └── upload.js
-│   │   ├── models/
-│   │   │   ├── User.js
-│   │   │   ├── Blog.js
-│   │   │   ├── Transaction.js
-│   │   │   └── Comment.js
-│   │   └── routes/
-│   │       ├── auth.js
-│   │       ├── blogs.js
-│   │       ├── comments.js
-│   │       ├── transactions.js
-│   │       └── admin.js
-│   ├── uploads/
-│   ├── package.json
-│   └── server.js
-└── frontend/
-    ├── public/
-    ├── src/
-    │   ├── components/
-    │   │   ├── ui/
-    │   │   ├── Header.js
-    │   │   ├── Footer.js
-    │   │   └── Layout.js
-    │   ├── contexts/
-    │   │   ├── AuthContext.js
-    │   │   └── ThemeContext.js
-    │   ├── hooks/
-    │   │   ├── useBlogs.js
-    │   │   └── useCommon.js
-    │   ├── pages/
-    │   │   ├── admin/
-    │   │   ├── Home.js
-    │   │   ├── BlogList.js
-    │   │   ├── BlogDetail.js
-    │   │   ├── Login.js
-    │   │   ├── Register.js
-    │   │   ├── Dashboard.js
-    │   │   └── Subscribe.js
-    │   ├── services/
-    │   │   ├── api.js
-    │   │   ├── authService.js
-    │   │   ├── blogService.js
-    │   │   ├── commentService.js
-    │   │   ├── transactionService.js
-    │   │   └── adminService.js
-    │   ├── utils/
-    │   │   └── helpers.js
-    │   ├── App.js
-    │   ├── index.js
-    │   └── index.css
-    └── package.json
-```
-
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - Node.js 16+ 
-- MySQL 8.0+
+- NeonDB
 - Git
 
 ### 1. Clone the Repository
@@ -132,7 +62,7 @@ cp .env.example .env
 ```
 
 Then edit `.env` with your actual configuration values:
-- Database credentials for your MySQL server
+- Database credentials for your PostgreSQL server
 - JWT secret (use a long, random string)
 - Email settings for notifications (optional)
 - bKash payment configuration (optional)
@@ -170,7 +100,7 @@ Start the frontend development server:
 npm start
 ```
 
-## 🔒 Security Features
+##  Security Features
 
 - **JWT Authentication** with secure secret keys
 - **bcrypt Password Hashing** with salt rounds
@@ -181,7 +111,7 @@ npm start
 - **File Upload Validation** with size and type restrictions
 - **Role-based Access Control** for admin functions
 
-## 🚀 Deployment
+##  Deployment
 
 ### Backend Deployment
 1. Set up MySQL database on your server
@@ -203,7 +133,7 @@ JWT_SECRET=your_very_secure_jwt_secret
 FRONTEND_URL=https://yourdomain.com
 ```
 
-## 🤝 Contributing
+##  Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -211,17 +141,12 @@ FRONTEND_URL=https://yourdomain.com
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 🔮 Future Enhancements
+##  Future Enhancements
 
-- [ ] Email newsletter subscription
 - [ ] Social media sharing for blogs  
-- [ ] Advanced search with full-text indexing
-- [ ] Blog series and reading progress tracking
 - [ ] User profiles and avatars
-- [ ] Mobile app using React Native
-- [ ] SEO optimization with meta tags
 - [ ] Analytics integration (Google Analytics)
 - [ ] Content management with WYSIWYG editor
 - [ ] Multi-language support
 
-**Happy Coding! 🚀**
+**Happy Coding!**

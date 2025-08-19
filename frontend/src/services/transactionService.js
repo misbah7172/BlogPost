@@ -67,11 +67,40 @@ export const transactionService = {
     });
   },
 
+  // Add transaction ID (admin function)
+  addTransactionId: async (trxId) => {
+    return await apiRequest('/admin/transactions/add-id', {
+      method: 'POST',
+      body: { trxId },
+    });
+  },
+
   // Update transaction status (generic function)
   updateTransactionStatus: async (transactionId, status) => {
-    return await apiRequest(`/transactions/${transactionId}/status`, {
-      method: 'PATCH',
-      body: { status },
+    if (status === 'approved') {
+      return await apiRequest(`/transactions/${transactionId}/approve`, {
+        method: 'POST',
+      });
+    } else if (status === 'rejected') {
+      return await apiRequest(`/transactions/${transactionId}/reject`, {
+        method: 'POST',
+      });
+    } else {
+      throw new Error(`Invalid status: ${status}. Use 'approved' or 'rejected'.`);
+    }
+  },
+
+  // Approve transaction (specific function)
+  approveTransaction: async (transactionId) => {
+    return await apiRequest(`/transactions/${transactionId}/approve`, {
+      method: 'POST',
+    });
+  },
+
+  // Reject transaction (specific function)  
+  rejectTransaction: async (transactionId) => {
+    return await apiRequest(`/transactions/${transactionId}/reject`, {
+      method: 'POST',
     });
   },
 

@@ -497,13 +497,13 @@ const AdminDashboard = () => {
                         {transaction.status === 'pending' && (
                           <div className="flex space-x-2">
                             <button
-                              onClick={() => handleApproveTransaction(transaction.id)}
+                              onClick={() => handleApproveTransaction(transaction.trx_id)}
                               className="brutal-button bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1"
                             >
                               Approve
                             </button>
                             <button
-                              onClick={() => handleRejectTransaction(transaction.id)}
+                              onClick={() => handleRejectTransaction(transaction.trx_id)}
                               className="brutal-button bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1"
                             >
                               Reject
