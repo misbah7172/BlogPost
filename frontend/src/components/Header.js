@@ -23,9 +23,15 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Navigate anyway even if logout fails
+      navigate('/');
+    }
     setIsMenuOpen(false);
   };
 
@@ -108,7 +114,19 @@ const Header = () => {
                   to="/dashboard"
                   className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 transition-colors duration-200"
                 >
-                  <User className="w-4 h-4" />
+                  {user?.photo_url ? (
+                    <img 
+                      src={user.photo_url} 
+                      alt={user.name}
+                      className="w-6 h-6 rounded-full object-cover border-2 border-gray-300 dark:border-gray-600"
+                      onError={(e) => {
+                        // Fallback to User icon if image fails to load
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'block';
+                      }}
+                    />
+                  ) : null}
+                  <User className={`w-4 h-4 ${user?.photo_url ? 'hidden' : ''}`} />
                   <span>{user?.name}</span>
                 </Link>
                 {user?.role === 'admin' && (
@@ -201,7 +219,19 @@ const Header = () => {
                   className="flex items-center space-x-3 px-3 py-2 text-base font-medium text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <User className="w-5 h-5" />
+                  {user?.photo_url ? (
+                    <img 
+                      src={user.photo_url} 
+                      alt={user.name}
+                      className="w-6 h-6 rounded-full object-cover border-2 border-gray-300 dark:border-gray-600"
+                      onError={(e) => {
+                        // Fallback to User icon if image fails to load
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'block';
+                      }}
+                    />
+                  ) : null}
+                  <User className={`w-5 h-5 ${user?.photo_url ? 'hidden' : ''}`} />
                   <span>{user?.name}</span>
                 </Link>
                 {user?.role === 'admin' && (

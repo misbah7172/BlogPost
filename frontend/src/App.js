@@ -4,6 +4,8 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Layout from './components/Layout';
+import EmailVerification from './components/EmailVerification';
+import { firebaseAuthService } from './services/firebaseAuthService';
 
 // Import pages
 import Home from './pages/Home';
@@ -21,6 +23,33 @@ import CreateBlog from './pages/CreateBlog';
 import EditBlog from './pages/EditBlog';
 import MindmapEditor from './pages/MindmapEditor';
 import MindmapViewer from './pages/MindmapViewer';
+import FirebaseTestPage from './pages/FirebaseTestPage';
+
+// Email verification guard component
+const EmailVerificationGuard = ({ children }) => {
+  const { user, isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated) {
+    return children;
+  }
+
+  // If user is authenticated via Firebase and it's an email/password account, check verification
+  if (user?.authProvider === 'firebase') {
+    const currentUser = firebaseAuthService.getCurrentUser();
+    const isEmailPassword = currentUser?.providerData.some(provider => provider.providerId === 'password');
+    
+    if (isEmailPassword && !currentUser?.emailVerified) {
+      return (
+        <EmailVerification 
+          user={currentUser} 
+          onVerified={() => window.location.reload()} 
+        />
+      );
+    }
+  }
+
+  return children;
+};
 
 // Protected route component
 const ProtectedRoute = ({ children, requireAdmin = false }) => {
@@ -51,8 +80,9 @@ function App() {
       <AuthProvider>
         <Router>
           <div className="App">
-            <Layout>
-              <Routes>
+            <EmailVerificationGuard>
+              <Layout>
+                <Routes>
                 {/* Public routes */}
                 <Route path="/" element={<Home />} />
                 <Route path="/blogs" element={<BlogList />} />
@@ -62,6 +92,7 @@ function App() {
                 <Route path="/subscribe" element={<Subscribe />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/privacy" element={<Privacy />} />
+                <Route path="/firebase-test" element={<FirebaseTestPage />} />
                 
                 {/* Public mindmap viewer */}
                 <Route path="/mindmap/view/:id" element={<MindmapViewer />} />
@@ -140,6 +171,7 @@ function App() {
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Layout>
+            </EmailVerificationGuard>
 
             {/* Toast notifications */}
             <Toaster
