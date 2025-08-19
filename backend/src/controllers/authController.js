@@ -30,8 +30,15 @@ class AuthController {
         return res.status(409).json({ message: 'Email already registered' });
       }
 
+      // Handle profile image upload
+      let photoURL = null;
+      if (req.file) {
+        // Create the image URL (assuming you serve static files from /uploads)
+        photoURL = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+      }
+
       // Create user
-      const userId = await User.create({ name, email, password });
+      const userId = await User.create({ name, email, password, photoURL });
 
       // Generate JWT
       const token = jwt.sign(
@@ -126,6 +133,67 @@ class AuthController {
       valid: true,
       user: req.user
     });
+  }
+
+  // Firebase user registration to database
+  static async registerFirebaseUser(req, res) {
+    try {
+      const { uid, name, email, photoURL } = req.body;
+
+      if (!uid || !email) {
+        return res.status(400).json({ message: 'Firebase UID and email are required' });
+      }
+
+      // Check if user already exists by email
+      const existingUser = await User.findByEmail(email);
+      if (existingUser) {
+        // User already exists, return existing user data
+        const token = jwt.sign(
+          { userId: existingUser.id, email: existingUser.email },
+          process.env.JWT_SECRET,
+          { expiresIn: process.env.JWT_EXPIRES_IN }
+        );
+
+        return res.status(200).json({
+          message: 'User already exists',
+          token,
+          user: existingUser,
+          isNewUser: false
+        });
+      }
+
+      // Create new user with Firebase data
+      const userId = await User.createFirebaseUser({ 
+        firebaseUid: uid, 
+        name: name || 'Firebase User', 
+        email, 
+        photoURL 
+      });
+
+      // Generate JWT
+      const token = jwt.sign(
+        { userId, email },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRES_IN }
+      );
+
+      // Get user data
+      const user = await User.findById(userId);
+
+      res.status(201).json({
+        message: 'Firebase user registered successfully',
+        token,
+        user,
+        isNewUser: true
+      });
+
+    } catch (error) {
+      console.error('Firebase user registration error:', error);
+      res.status(500).json({ 
+        message: 'Failed to register Firebase user',
+        error: error.message 
+      });
+    }
   }
 }
 

@@ -1,14 +1,34 @@
 const { pool } = require('../config/database');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 class User {
   static async create(userData) {
-    const { name, email, password } = userData;
+    const { name, email, password, photoURL } = userData;
     const hashedPassword = await bcrypt.hash(password, 12);
     
+    // Generate email verification token
+    const emailVerificationToken = crypto.randomBytes(32).toString('hex');
+    const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    
     const result = await pool.query(
-      'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id',
-      [name, email, hashedPassword]
+      `INSERT INTO users (name, email, password_hash, photo_url, auth_provider, email_verification_token, email_verification_expires) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, email_verification_token`,
+      [name, email, hashedPassword, photoURL || null, 'local', emailVerificationToken, emailVerificationExpires]
+    );
+    
+    return {
+      id: result.rows[0].id,
+      emailVerificationToken: result.rows[0].email_verification_token
+    };
+  }
+
+  static async createFirebaseUser(userData) {
+    const { firebaseUid, name, email, photoURL } = userData;
+    
+    const result = await pool.query(
+      'INSERT INTO users (name, email, firebase_uid, photo_url, auth_provider) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+      [name, email, firebaseUid, photoURL, 'firebase']
     );
     
     return result.rows[0].id;
