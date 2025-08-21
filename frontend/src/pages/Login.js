@@ -191,17 +191,6 @@ const Login = () => {
             </div>
           </div>
 
-          {/* Demo Credentials */}
-          <div className="bg-primary-50 dark:bg-primary-900/20 border-2 border-primary-500 p-4">
-            <p className="text-sm font-medium text-primary-800 dark:text-primary-200 mb-2">
-              Demo Credentials:
-            </p>
-            <p className="text-xs text-primary-600 dark:text-primary-300">
-              Email: admin@blogsite.com<br />
-              Password: admin123
-            </p>
-          </div>
-
           {/* Submit Button */}
           <div>
             <button
